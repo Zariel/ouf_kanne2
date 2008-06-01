@@ -31,9 +31,9 @@ local oUF = _G.oUF
 local height, width = 35, 250
 local playerName = UnitName("player")
 
-local supernova = "Interface\\AddOns\\oUF_Kanne2\\nokiafc22.ttf"
-local texture = "Interface\\AddOns\\oUF_Kanne2\\HalV.tga"
-local apathy = "Interface\\AddOns\\oUF_Kanne2\\Normal.tga"
+local supernova = [[Interface\AddOns\oUF_Kanne2\media\nokiafc22.ttf]]
+local texture = [[Interface\AddOns\oUF_Kanne2\media\HalV.tga]]
+local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
 
 local name, rank, buffTexture, count, duration, timeLeft, dtype
 
