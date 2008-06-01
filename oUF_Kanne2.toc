@@ -1,0 +1,8 @@
+## Interface: 20400
+## Title: oUF_Kanne2
+## Notes: OH HI
+## Dependencies: oUF
+## Version: 1
+## X-Credits: Lyn (This is his layout)
+
+core.lua
