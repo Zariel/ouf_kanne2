@@ -68,7 +68,7 @@ local colors = {
 local format = setmetatable({
 	["all"] = setmetatable({
 		["health"] = "%d.%d%%",
-		["health_full"] = "%d",
+		["health_full"] = "%d%%",
 		["health_per"] = "|cff%s%d|r.%d%%",
 		["power"] = "%d.|cffADADAD%d|r",
 		["power_full"] = "%d",
@@ -145,15 +145,17 @@ local Health_Update = function(self, event, bar, unit, current, max)
 
 	local form = format[unit]
 	local per = math.floor((current/max)*100)
-	val:SetFormattedText(form.health, current, per)
 
-	if per == 100 then
+	if per == 100 or per == 0 then
 		val:Hide()
 	else
 		val:Show()
-		local col = ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)
-		col = toHex(unpack(col))
-		val:SetFormattedText(form.health_per, col, current, per)
+		if powerBreak[unit] then
+			val:SetFormattedText(form.health_full, per)
+		else
+			local col = toHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
+			val:SetFormattedText(form.health_per, col, current, per)
+		end
 	end
 end
 
@@ -174,7 +176,7 @@ local Power_Update = function(self, event, bar, unit, current, max)
 		return val:Hide()
 	end
 
-	if current == max then
+	if current == max or current == 0 then
 		val:Hide()
 	else
 		val:Show()
@@ -200,7 +202,7 @@ local Name_Update = function(self, event, unit)
 	local level = UnitLevel(unit)
 	local name = UnitName(unit)
 	if powerBreak[unit] then
-		self.Name:SetText(string.sub(name, 1, 4))
+		self.Name:SetText(string.sub(name, 1, 5))
 		if UnitName(unit) == playerName and unit ~= "pet" then
 			self.Name:SetTextColor(1,0,0)
 		else
@@ -224,8 +226,6 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 	else
 		icon.overlay:SetVertexColor(0.45, 0.45, 0.45)
 	end
-
-
 end
 
 local OnEnter = function(self)
@@ -255,10 +255,10 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 
 	local icon = button:CreateTexture(nil, "BACKGROUND")
 	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-	icon:SetPoint("LEFT", 2, 0)
-	icon:SetPoint("RIGHT", -2, 0)
-	icon:SetPoint("TOP", 0, -2)
-	icon:SetPoint("BOTTOM", 0, 2)
+	icon:SetPoint("LEFT", 1, 0)
+	icon:SetPoint("RIGHT", -1, 0)
+	icon:SetPoint("TOP", 0, -1)
+	icon:SetPoint("BOTTOM", 0, 1)
 
 	local skin = button:CreateTexture(nil, "OVERLAY")
 	skin:SetTexture(apathy)
@@ -287,6 +287,7 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	button.overlay = skin
 	button.count = count
 
+	-- Condom
 	button.cd = setmetatable({}, {__index = function(self, key)
 		return dummy
 	end})
@@ -397,14 +398,14 @@ local frame = function(settings, self, unit)
 	if unit == "target" or self:GetParent():GetName() == "oUF_Party" then
 		if unit == "target" then
 			local b = CreateFrame("Frame", nil, self)
-			b:SetHeight(40)
+			b:SetHeight(50)
 			b:SetWidth(width)
 			b:SetPoint("RIGHT")
-			b:SetPoint("BOTTOM", self, "TOP", 0, 2)
-			b.num = 2 * math.floor(width/20)
+			b:SetPoint("BOTTOM", self, "TOP", 0, 3)
+			b.num = 2 * math.floor(width/25)
 			b["growth-x"] = "LEFT"
 			b["growth-y"] = "UP"
-			b.size = 20
+			b.size = 25
 			b.initialAnchor = "BOTTOMRIGHT"
 			self.Buffs = b
 		end
@@ -412,7 +413,7 @@ local frame = function(settings, self, unit)
 		local d = CreateFrame("Frame", nil, self)
 		d:SetHeight(height)
 		d:SetWidth(6 * height)
-		d:SetPoint("LEFT", self, "RIGHT")
+		d:SetPoint("LEFT", self, "RIGHT", 1, 0)
 		d.size = height
 		d.initialAnchor = "BOTTOMLEFT"
 		d.num = 6
@@ -423,8 +424,8 @@ local frame = function(settings, self, unit)
 	end
 
 	if unit == "targettarget" or unit == "pet" or unit == "focus" then
-		pval:Hide()
-		hval:Hide()
+	--	pval:Hide()
+	--	hval:Hide()
 		hp:SetWidth(294*0.45)
 		hp:SetHeight(27*0.8)
 		mp:SetHeight(7*0.8)
