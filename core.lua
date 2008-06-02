@@ -28,6 +28,14 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 local _G = getfenv(0)
 local oUF = _G.oUF
 
+local select = select
+local floor = math.floor
+local UnitName = UnitName
+local UnitDebuff = UnitDebuff
+local UnitBuff = UnitBuff
+local UnitClass = UnitClass
+local SecondsToTimeAbbrev = SecondsToTimeAbbrev
+
 local height, width = 35, 250
 local playerName = UnitName("player")
 
@@ -144,7 +152,7 @@ local Health_Update = function(self, event, bar, unit, current, max)
 	local val = bar.value
 
 	local form = format[unit]
-	local per = math.floor((current/max)*100)
+	local per = floor((current/max)*100)
 
 	if per == 100 or per == 0 then
 		val:Hide()
@@ -213,11 +221,32 @@ local Name_Update = function(self, event, unit)
 	end
 end
 
+local durationTimer = function(self, elapsed)
+	local id = self:GetID()
+	local timeLeft = (select(7, UnitDebuff(self.unit, id)))
+
+	if not timeLeft then
+		return self:SetScript("OnUpdate", nil)
+	else
+		self.duration:SetText(floor(timeLeft))
+	end
+end
+
 local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filter, isDebuff)
+	icon.unit = unit
+
 	if isDebuff then
 		name, rank, buffTexture, count, dtype, duration, timeLeft = UnitDebuff(unit, index, filter)
 	else
 		name, rank, buffTexture, count, duration, timeLeft = UnitBuff(unit, index, filter)
+	end
+
+	if isDebuff and timeLeft then
+		icon:SetScript("OnUpdate", durationTimer)
+		icon.duration:Show()
+	else
+		icon:SetScript("OnUpdate", nil)
+		icon.duration:Hide()
 	end
 
 	if isDebuff then
@@ -274,8 +303,20 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	skin.Hide = dummy
 
 	local count = button:CreateFontString(nil, "OVERLAY")
-	count:SetFontObject(NumberFontNormal)
-	count:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT", -1, 0)
+	count:SetFont(supernova, 10, "THINOUTLINE")
+	count:SetShadowColor(0, 0, 0, 1)
+	count:SetShadowOffset(1, -1)
+	count:SetTextColor(1, 1, 0)
+	count:SetPoint("BOTTOMRIGHT", -1, 1)
+	count:SetJustifyH("RIGHT")
+
+	local duration = button:CreateFontString(nil, "OVERLAY")
+	duration:SetFont(supernova, 13, "OUTLINE")
+	duration:SetShadowColor(0, 0, 0, 0.8)
+	duration:SetShadowOffset(1, -1)
+	duration:SetTextColor(1, 0, 0)
+	duration:SetPoint("TOPLEFT", 1, -1)
+	duration:SetJustifyH("LEFT")
 
 	button:SetScript("OnEnter", OnEnter)
 	button:SetScript("OnLeave", OnLeave)
@@ -286,11 +327,13 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	button.icon = icon
 	button.overlay = skin
 	button.count = count
+	button.duration = duration
 
-	-- Condom
-	button.cd = setmetatable({}, {__index = function(self, key)
+	local condom = setmetatable({}, {__index = function(self, key)
 		return dummy
 	end})
+
+	button.cd = condom
 
 	table.insert(icons, button)
 
@@ -402,7 +445,7 @@ local frame = function(settings, self, unit)
 			b:SetWidth(width)
 			b:SetPoint("RIGHT")
 			b:SetPoint("BOTTOM", self, "TOP", 0, 3)
-			b.num = 2 * math.floor(width/25)
+			b.num = 2 * floor(width/25)
 			b["growth-x"] = "LEFT"
 			b["growth-y"] = "UP"
 			b.size = 25
@@ -431,7 +474,6 @@ local frame = function(settings, self, unit)
 		mp:SetHeight(7*0.8)
 
 	end
-
 
 	return self
 end
