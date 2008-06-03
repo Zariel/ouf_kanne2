@@ -515,5 +515,5 @@ pet:SetPoint("RIGHT", player, "RIGHT")
 pet:SetPoint("TOP", player, "BOTTOM", 0, -5)
 
 local focus = oUF:Spawn("focus")
-focus:SetPoint("RIGHT", player, "LEFT")
-focus:SetPoint("BOTTOM", player, "TOP", 0, 30)
+focus:SetPoint("LEFT", player, "LEFT")
+focus:SetPoint("BOTTOM", player, "TOP", 0, 5)
