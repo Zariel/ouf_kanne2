@@ -73,11 +73,17 @@ local colors = {
 	},
 }
 
+setmetatable(colors.class, {
+	__index = function(self, key)
+		return self.WARRIOR
+	end
+})
 local format = setmetatable({
 	["all"] = setmetatable({
 		["health"] = "%d.%d%%",
 		["health_full"] = "%d%%",
 		["health_per"] = "|cff%s%d|r.%d%%",
+		["health_perOnly"] = "|cff%s%d|r%%",
 		["power"] = "%d.|cffADADAD%d|r",
 		["power_full"] = "%d",
 		["name"] = "|cff%s%s|r %s",
@@ -162,7 +168,11 @@ local Health_Update = function(self, event, bar, unit, current, max)
 			val:SetFormattedText(form.health_full, per)
 		else
 			local col = toHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
-			val:SetFormattedText(form.health_per, col, current, per)
+			if current == per then
+				val:SetFormattedText(form.health_perOnly, col, per)
+			else
+				val:SetFormattedText(form.health_per, col, current, per)
+			end
 		end
 	end
 end
@@ -178,6 +188,11 @@ local Power_Update = function(self, event, bar, unit, current, max)
 			local col = colors.happy[GetPetHappiness()]
 			bar:SetStatusBarColor(unpack(col))
 		end
+	else
+		local col = colors.mp[UnitPowerType(unit)]
+		self.Power:SetStatusBarColor(unpack(col))
+		self.Power.bg:SetVertexColor(unpack(col))
+
 	end
 
 	if powerBreak[unit] then
@@ -203,9 +218,7 @@ local Name_Update = function(self, event, unit)
 	self.Health:SetStatusBarColor(unpack(color))
 	self.Health.bg:SetVertexColor(unpack(color))
 
-	local col = colors.mp[UnitPowerType(unit)]
-	self.Power:SetStatusBarColor(unpack(col))
-	self.Power.bg:SetVertexColor(unpack(col))
+
 
 	local level = UnitLevel(unit)
 	local name = UnitName(unit)
@@ -438,6 +451,15 @@ local frame = function(settings, self, unit)
 	self.Name = name
 	self.UNIT_NAME_UPDATE = Name_Update
 
+	local ricon = self:CreateTexture(nil, "OVERLAY")
+	ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
+	ricon:SetHeight(16)
+	ricon:SetWidth(16)
+
+	self.RaidIcon = ricon
+	self.RAID_TARGET_UPDATE = oUF.RAID_TARGET_UPDATE
+	self:RegisterEvent("RAID_TARGET_UPDATE")
+
 	if unit == "target" or self:GetParent():GetName() == "oUF_Party" then
 		if unit == "target" then
 			local b = CreateFrame("Frame", nil, self)
@@ -473,6 +495,12 @@ local frame = function(settings, self, unit)
 		hp:SetHeight(27*0.8)
 		mp:SetHeight(7*0.8)
 
+	end
+
+	if self:GetParent():GetName() == "oUF_Party" then
+		self.Range = true
+		self.inRangeAlpha = 1
+		self.outsideRangeAlpha = 0.4
 	end
 
 	return self
