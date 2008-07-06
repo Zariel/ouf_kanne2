@@ -218,8 +218,6 @@ local Name_Update = function(self, event, unit)
 	self.Health:SetStatusBarColor(unpack(color))
 	self.Health.bg:SetVertexColor(unpack(color))
 
-
-
 	local level = UnitLevel(unit)
 	local name = UnitName(unit)
 	if powerBreak[unit] then
@@ -254,7 +252,7 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 		name, rank, buffTexture, count, duration, timeLeft = UnitBuff(unit, index, filter)
 	end
 
-	if isDebuff and timeLeft then
+	if isDebuff and timeLeft and timeLeft > 0 then
 		icon:SetScript("OnUpdate", durationTimer)
 		icon.duration:Show()
 	else
@@ -283,7 +281,7 @@ local OnEnter = function(self)
 end
 
 local OnLeave = function()
-	GameTooltip:Hide()
+	return GameTooltip:Hide()
 end
 
 local CreateAuraIcon = function(self, icons, index, isDebuff)
@@ -438,8 +436,8 @@ local frame = function(settings, self, unit)
 
 	local name = hp:CreateFontString(nil, "OVERLAY")
 	name:SetPoint("LEFT", self, "LEFT", 14, 0)
---	name:SetPoint("TOP")
---	name:SetPoint("BOTTOM")
+	name:SetPoint("TOP")
+	name:SetPoint("BOTTOM")
 	name:SetPoint("RIGHT", hval, "LEFT")
 	name:SetJustifyH("LEFT")
 	name:SetFont(supernova, 10, "THINOUTLINE")
