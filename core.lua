@@ -262,7 +262,7 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 
 	if isDebuff then
 		local col = DebuffTypeColor[dtype or "none"]
-		icon.overlay:SetVertexColor(0.45 * col.r, 0.45 * col.g, 0.45 * col.b)
+		icon.overlay:SetVertexColor(col.r, col.g, col.b)
 	else
 		icon.overlay:SetVertexColor(0.45, 0.45, 0.45)
 	end
@@ -436,8 +436,8 @@ local frame = function(settings, self, unit)
 
 	local name = hp:CreateFontString(nil, "OVERLAY")
 	name:SetPoint("LEFT", self, "LEFT", 14, 0)
-	name:SetPoint("TOP")
-	name:SetPoint("BOTTOM")
+	name:SetPoint("TOP", 0, -5)
+	name:SetPoint("BOTTOM", 0, 5)
 	name:SetPoint("RIGHT", hval, "LEFT")
 	name:SetJustifyH("LEFT")
 	name:SetFont(supernova, 10, "THINOUTLINE")
@@ -457,6 +457,9 @@ local frame = function(settings, self, unit)
 	self.RAID_TARGET_UPDATE = oUF.RAID_TARGET_UPDATE
 	self:RegisterEvent("RAID_TARGET_UPDATE")
 
+	if unit == "target" then
+	end
+
 	if unit == "target" or self:GetParent():GetName() == "oUF_Party" then
 		if unit == "target" then
 			local b = CreateFrame("Frame", nil, self)
@@ -475,7 +478,7 @@ local frame = function(settings, self, unit)
 		local d = CreateFrame("Frame", nil, self)
 		d:SetHeight(height)
 		d:SetWidth(6 * height)
-		d:SetPoint("LEFT", self, "RIGHT", 1, 0)
+		d:SetPoint("LEFT", self, "RIGHT", 3, 0)
 		d.size = height
 		d.initialAnchor = "BOTTOMLEFT"
 		d.num = 6
