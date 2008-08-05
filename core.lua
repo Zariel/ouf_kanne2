@@ -183,12 +183,7 @@ local Power_Update = function(self, event, bar, unit, current, max)
 
 	val:SetText(current)
 
-	if unit == "pet" then
-		if GetPetHappiness() then
-			local col = colors.happy[GetPetHappiness()]
-			bar:SetStatusBarColor(unpack(col))
-		end
-	else
+	if unit ~= "pet" then
 		local col = colors.mp[UnitPowerType(unit)]
 		self.Power:SetStatusBarColor(unpack(col))
 		self.Power.bg:SetVertexColor(unpack(col))
@@ -230,6 +225,19 @@ local Name_Update = function(self, event, unit)
 	else
 		self.Name:SetFormattedText(format["all"]["name"], toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
 	end
+end
+
+local Happiness_Update = function(self, event, unit)
+	if unit ~= self.unit or not HasPetUI() then return end
+
+	local happiness = GetPetHappiness()
+	local col
+	if happiness then
+		col = colors.happy[happiness]
+	else
+		col = colors.mp[UnitPowerType(unit)]
+	end
+	self.Power:SetStatusBarColor(unpack(col))
 end
 
 local durationTimer = function(self, elapsed)
@@ -491,10 +499,14 @@ local frame = function(settings, self, unit)
 	if unit == "targettarget" or unit == "pet" or unit == "focus" then
 	--	pval:Hide()
 	--	hval:Hide()
-		hp:SetWidth(294*0.45)
-		hp:SetHeight(27*0.8)
-		mp:SetHeight(7*0.8)
+		hp:SetWidth(294 * 0.45)
+		hp:SetHeight(27 * 0.8)
+		mp:SetHeight(7 * 0.8)
+	end
 
+	if unit == "pet" then
+		self.Happiness = true
+		self.UNIT_HAPPINESS = Happiness_Update
 	end
 
 	if self:GetParent():GetName() == "oUF_Party" then
