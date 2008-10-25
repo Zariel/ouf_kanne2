@@ -153,7 +153,7 @@ local menu = function(self)
 	end
 end
 
-local Health_Update = function(self, event, bar, unit, current, max)
+local Health_Update = function(self, event, unit, bar, current, max)
 	bar:SetValue(current)
 	local val = bar.value
 
@@ -177,7 +177,7 @@ local Health_Update = function(self, event, bar, unit, current, max)
 	end
 end
 
-local Power_Update = function(self, event, bar, unit, current, max)
+local Power_Update = function(self, event, unit, bar, current, max)
 	bar:SetValue(current)
 	local val = bar.value
 
@@ -244,10 +244,10 @@ local durationTimer = function(self, elapsed)
 	local id = self:GetID()
 	local timeLeft = (select(7, UnitDebuff(self.unit, id)))
 
-	if not timeLeft then
-		return self:SetScript("OnUpdate", nil)
-	else
+	if timeLeft and timeLeft < 300 then
 		self.duration:SetText(floor(timeLeft))
+	else
+		return self:SetScript("OnUpdate", nil)
 	end
 end
 
@@ -264,7 +264,6 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 		icon:SetScript("OnUpdate", durationTimer)
 		icon.duration:Show()
 	else
-		icon:SetScript("OnUpdate", nil)
 		icon.duration:Hide()
 	end
 
@@ -505,7 +504,7 @@ local frame = function(settings, self, unit)
 	end
 
 	if unit == "pet" then
-		self.Happiness = true
+		self.Happiness = false
 		self.UNIT_HAPPINESS = Happiness_Update
 	end
 
@@ -530,6 +529,7 @@ local style_small = setmetatable({
 }, call_meta)
 
 oUF:RegisterStyle("Kanne2", style)
+oUF:SetActiveStyle("Kanne2")
 
 local player = oUF:Spawn("player")
 player:SetPoint("RIGHT", UIParent, "CENTER", -5, -200)
