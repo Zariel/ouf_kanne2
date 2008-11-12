@@ -34,6 +34,8 @@ local UnitName = UnitName
 local UnitDebuff = UnitDebuff
 local UnitBuff = UnitBuff
 local UnitClass = UnitClass
+local UnitAura = UnitAura
+local GetTime = GetTime
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 local height, width = 35, 250
@@ -46,6 +48,21 @@ local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
 local name, rank, buffTexture, count, duration, timeLeft, dtype
 
 local dummy = function() end
+
+function oUF:UNIT_NAME_UPDATE(event, unit)
+	if(self.unit ~= unit) then return end
+	local name = UnitName(unit)
+
+	self.Name:SetText(name)
+end
+
+table.insert(oUF.subTypes, function(self)
+	if(self.Name) then
+		self:RegisterEvent"UNIT_NAME_UPDATE"
+	end
+end)
+
+oUF:RegisterSubTypeMapping("UNIT_NAME_UPDATE")
 
 local colors = {
 	mp = {
@@ -78,6 +95,7 @@ setmetatable(colors.class, {
 		return self.WARRIOR
 	end
 })
+
 local format = setmetatable({
 	["all"] = setmetatable({
 		["health"] = "%d.%d%%",
@@ -242,10 +260,10 @@ end
 
 local durationTimer = function(self, elapsed)
 	local id = self:GetID()
-	local timeLeft = (select(7, UnitDebuff(self.unit, id)))
+	local _, _, _, _, _, _, expirationTime = UnitAura(self.unit, self:GetID(), "HARMFUL")
 
-	if timeLeft and timeLeft < 300 then
-		self.duration:SetText(floor(timeLeft))
+	if expirationTime then
+		self.duration:SetText(floor(expirationTime - GetTime() + 0.5))
 	else
 		return self:SetScript("OnUpdate", nil)
 	end
