@@ -70,10 +70,12 @@ local colors = {
 		[1] = { 226/255, 45/255, 75/255 }, -- Rage
 		[2] = { 255/255, 178/255, 0 }, -- Focus
 		[3] = { 1, 1, 34/255 }, -- Energy
-		[4] = { 0, 1, 1 } -- Happiness
+		[4] = { 0, 1, 1 }, -- Happiness
+		[5] = { 0.5, 0.5, 0.5 },
+		[6] = { 0, 0.82, 1 }
 	},
 	class ={
-		["DEATHKNIGHT"] = { 0.23, 0.12, 0.77 },
+		["DEATHKNIGHT"] = { 0.77, 0.12, 0.23 },
 		["DRUID"] = { 1.0 , 0.49, 0.04 },
 		["HUNTER"] = { 0.67, 0.83, 0.45 },
 		["MAGE"] = { 0.41, 0.8 , 0.94 },
@@ -203,7 +205,7 @@ local Power_Update = function(self, event, unit, bar, current, max)
 	val:SetText(current)
 
 	if unit ~= "pet" then
-		local col = colors.mp[UnitPowerType(unit)]
+		local col = colors.mp[UnitPowerType(unit)] or {1,1,1}
 		self.Power:SetStatusBarColor(unpack(col))
 		self.Power.bg:SetVertexColor(unpack(col))
 
