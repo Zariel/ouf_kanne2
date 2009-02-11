@@ -52,14 +52,19 @@ local dummy = function() end
 do
 	local update = function(self, event, unit)
 		if(self.unit ~= unit) then return end
-		local name = UnitName(unit)
-
-		self.Name:SetText(name)
+		if(self.OverideUpdateName) then
+			self:OverideUpdateName(event, unit)
+		else
+			local name = UnitName(unit)
+			self.Name:SetText(name)
+		end
 	end
 
-	local enable = function(self, event)
+	local enable = function(self, unit)
 		if(self.Name) then
-			self:RegisterEvent"UNIT_NAME_UPDATE"
+			self:RegisterEvent("UNIT_NAME_UPDATE", update)
+
+			return true
 		end
 	end
 
@@ -69,7 +74,7 @@ do
 		end
 	end
 
-	oUF:AddElement("UNIT_NAME_UPDATE", update, enable, disable)
+	oUF:AddElement("Name", update, enable, disable)
 end
 
 local colors = {
@@ -403,6 +408,7 @@ local frame = function(settings, self, unit)
 		bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16,
 		insets = {left = -2, right = -2, top = -2, bottom = -2},
 	})
+
 	self:SetBackdropColor(0, 0, 0, 1)
 
 	self:SetAttribute("*type2", "menu")
@@ -484,7 +490,7 @@ local frame = function(settings, self, unit)
 	name:SetTextColor(1,1,1,1)
 
 	self.Name = name
-	self.UNIT_NAME_UPDATE = Name_Update
+	self.OverideUpdateName = Name_Update
 
 	local ricon = self:CreateTexture(nil, "OVERLAY")
 	ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
@@ -492,11 +498,6 @@ local frame = function(settings, self, unit)
 	ricon:SetWidth(16)
 
 	self.RaidIcon = ricon
-	self.RAID_TARGET_UPDATE = oUF.RAID_TARGET_UPDATE
-	self:RegisterEvent("RAID_TARGET_UPDATE")
-
-	if unit == "target" then
-	end
 
 	if unit == "target" or self:GetParent():GetName() == "oUF_Party" then
 		if unit == "target" then
