@@ -230,11 +230,13 @@ local Name_Update = function(self, event, unit)
 		self.Name:Show()
 	end
 
-	local color = colors.class[select(2, UnitClass(unit))] or {1,1,1}
+	local class = select(2, UnitClass(unit))
+	local color = colors.class[class] or { 1, 1, 1 }
 	self.Health:SetStatusBarColor(unpack(color))
 	self.Health.bg:SetVertexColor(unpack(color))
 
 	local level = UnitLevel(unit)
+
 	local name = UnitName(unit)
 	if powerBreak[unit] then
 		self.Name:SetText(string.sub(name, 1, 5))
@@ -244,7 +246,7 @@ local Name_Update = function(self, event, unit)
 			self.Name:SetTextColor(1, 1, 1)
 		end
 	else
-		self.Name:SetFormattedText(format["all"]["name"], toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
+		self.Name:SetFormattedText(format.all.name, toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
 	end
 end
 
@@ -312,6 +314,10 @@ local OnLeave = function()
 	return GameTooltip:Hide()
 end
 
+local condom = setmetatable({}, {__index = function(self, key)
+	return dummy
+end})
+
 local CreateAuraIcon = function(self, icons, index, isDebuff)
 	local size = icons.size or 16
 
@@ -367,10 +373,6 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	button.overlay = skin
 	button.count = count
 	button.duration = duration
-
-	local condom = setmetatable({}, {__index = function(self, key)
-		return dummy
-	end})
 
 	button.cd = condom
 
