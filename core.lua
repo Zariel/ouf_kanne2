@@ -72,8 +72,6 @@ do
 	oUF:AddElement("UNIT_NAME_UPDATE", update, enable, disable)
 end
 
-oUF:RegisterSubTypeMapping("UNIT_NAME_UPDATE")
-
 local colors = {
 	mp = {
 		[0] = { 48/255, 113/255,191/255 }, -- Mana
