@@ -45,7 +45,7 @@ local supernova = [[Interface\AddOns\oUF_Kanne2\media\nokiafc22.ttf]]
 local texture = [[Interface\AddOns\oUF_Kanne2\media\HalV.tga]]
 local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
 
-local name, rank, buffTexture, count, duration, timeLeft, dtype
+local name, rank, btexture, count, dtype, duration, timeLeft, isPlayer
 
 local dummy = function() end
 
@@ -290,11 +290,7 @@ end
 local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filter, isDebuff)
 	icon.unit = unit
 
-	if isDebuff then
-		name, rank, buffTexture, count, dtype, duration, timeLeft = UnitDebuff(unit, index, filter)
-	else
-		name, rank, buffTexture, count, duration, timeLeft = UnitBuff(unit, index, filter)
-	end
+	name, rank, btexture, count, dtype, duration, timeLeft, isPlayer = UnitAura(unit, index, filter)
 
 	if isDebuff and timeLeft and timeLeft > 0 then
 		icon:SetScript("OnUpdate", durationTimer)
@@ -394,6 +390,14 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	return button
 end
 
+local Cast_Start = function(self, event, unit, name, rank, text, id)
+	self.Name:Hide()
+end
+
+local Cast_Stop = function(self, event, unit)
+	self.Name:Show()
+end
+
 local frame = function(settings, self, unit)
 	self.menu = menu
 
@@ -488,6 +492,30 @@ local frame = function(settings, self, unit)
 	name:SetShadowColor(0,0,0,1)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
+
+	local cbar = CreateFrame("StatusBar", nil, self)
+	cbar:Hide()
+	cbar:SetHeight(30)
+	cbar:SetWidth(width)
+	cbar:SetAlpha(0.8)
+	cbar:SetStatusBarTexture(texture)
+	cbar:SetAllPoints(hp)
+
+	local ctext = cbar:CreateFontString(nil, "OVERLAY")
+	ctext:SetPoint("LEFT", self, "LEFT", 14, 0)
+	ctext:SetPoint("TOP", 0, -5)
+	ctext:SetPoint("BOTTOM", 0, 5)
+	ctext:SetPoint("RIGHT", hval, "LEFT")
+	ctext:SetJustifyH("LEFT")
+	ctext:SetFont(supernova, 10, "THINOUTLINE")
+	ctext:SetShadowColor(0,0,0,1)
+	ctext:SetShadowOffset(1, -1)
+	ctext:SetTextColor(1,1,1,1)
+
+	cbar.Text = ctext
+	self.Castbar = cbar
+	self.PostCastStart = Cast_Start
+	self.PostCastStop = Cast_Stop
 
 	self.Name = name
 	self.OverideUpdateName = Name_Update
