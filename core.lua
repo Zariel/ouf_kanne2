@@ -277,10 +277,9 @@ local Happiness_Update = function(self, event, unit)
 end
 
 local durationTimer = function(self, elapsed)
-	local id = self:GetID()
-	local _, _, _, _, _, _, expirationTime = UnitAura(self.unit, self:GetID(), "HARMFUL")
+	local expirationTime = select(7, UnitAura(self.unit, self:GetID(), "HARMFUL"))
 
-	if expirationTime then
+	if expirationTime and (expirationTime - GetTime()) < 300 then
 		self.duration:SetText(floor(expirationTime - GetTime() + 0.5))
 	else
 		return self:SetScript("OnUpdate", nil)
@@ -291,6 +290,10 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 	icon.unit = unit
 
 	name, rank, btexture, count, dtype, duration, timeLeft, isPlayer = UnitAura(unit, index, filter)
+
+	if not isPlayer then
+		icon:SetAlpha(0.6)
+	end
 
 	if isDebuff and timeLeft and timeLeft > 0 then
 		icon:SetScript("OnUpdate", durationTimer)
@@ -323,7 +326,7 @@ local OnLeave = function()
 	return GameTooltip:Hide()
 end
 
-local condom = setmetatable({}, {__index = function(self, key)
+local condom = setmetatable({}, {__index = function()
 	return dummy
 end})
 
@@ -388,14 +391,6 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	table.insert(icons, button)
 
 	return button
-end
-
-local Cast_Start = function(self, event, unit, name, rank, text, id)
-	self.Name:Hide()
-end
-
-local Cast_Stop = function(self, event, unit)
-	self.Name:Show()
 end
 
 local frame = function(settings, self, unit)
@@ -492,30 +487,6 @@ local frame = function(settings, self, unit)
 	name:SetShadowColor(0,0,0,1)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
-
-	local cbar = CreateFrame("StatusBar", nil, self)
-	cbar:Hide()
-	cbar:SetHeight(30)
-	cbar:SetWidth(width)
-	cbar:SetAlpha(0.8)
-	cbar:SetStatusBarTexture(texture)
-	cbar:SetAllPoints(hp)
-
-	local ctext = cbar:CreateFontString(nil, "OVERLAY")
-	ctext:SetPoint("LEFT", self, "LEFT", 14, 0)
-	ctext:SetPoint("TOP", 0, -5)
-	ctext:SetPoint("BOTTOM", 0, 5)
-	ctext:SetPoint("RIGHT", hval, "LEFT")
-	ctext:SetJustifyH("LEFT")
-	ctext:SetFont(supernova, 10, "THINOUTLINE")
-	ctext:SetShadowColor(0,0,0,1)
-	ctext:SetShadowOffset(1, -1)
-	ctext:SetTextColor(1,1,1,1)
-
-	cbar.Text = ctext
-	self.Castbar = cbar
-	self.PostCastStart = Cast_Start
-	self.PostCastStop = Cast_Stop
 
 	self.Name = name
 	self.OverideUpdateName = Name_Update
