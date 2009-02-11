@@ -49,18 +49,28 @@ local name, rank, buffTexture, count, duration, timeLeft, dtype
 
 local dummy = function() end
 
-function oUF:UNIT_NAME_UPDATE(event, unit)
-	if(self.unit ~= unit) then return end
-	local name = UnitName(unit)
+do
+	local update = function(self, event, unit)
+		if(self.unit ~= unit) then return end
+		local name = UnitName(unit)
 
-	self.Name:SetText(name)
-end
-
-table.insert(oUF.subTypes, function(self)
-	if(self.Name) then
-		self:RegisterEvent"UNIT_NAME_UPDATE"
+		self.Name:SetText(name)
 	end
-end)
+
+	local enable = function(self, event)
+		if(self.Name) then
+			self:RegisterEvent"UNIT_NAME_UPDATE"
+		end
+	end
+
+	local disable = function(self)
+		if(self.Name) then
+			self:UnregisterEvent("UNIT_NAME_UPDATE")
+		end
+	end
+
+	oUF:AddElement("UNIT_NAME_UPDATE", update, enable, disable)
+end
 
 oUF:RegisterSubTypeMapping("UNIT_NAME_UPDATE")
 
