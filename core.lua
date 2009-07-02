@@ -192,7 +192,7 @@ local Health_Update = function(self, event, unit, bar, current, max)
 	local val = bar.value
 
 	local form = format[unit]
-	local per = floor((current/max)*100)
+	local per = floor(current * 100 / max)
 
 	if per == 100 or per == 0 then
 		val:Hide()
@@ -217,11 +217,10 @@ local Power_Update = function(self, event, unit, bar, current, max)
 
 	val:SetText(current)
 
-	if unit ~= "pet" then
-		local col = colors.mp[UnitPowerType(unit)] or {1,1,1}
+	if unit ~= "pet" and UnitClass("player") ~= "hunter" then
+		local col = colors.mp[UnitPowerType(unit)] or {1, 1, 1}
 		self.Power:SetStatusBarColor(unpack(col))
 		self.Power.bg:SetVertexColor(unpack(col))
-
 	end
 
 	if powerBreak[unit] then
@@ -249,8 +248,12 @@ local Name_Update = function(self, event, unit)
 	self.Health.bg:SetVertexColor(unpack(color))
 
 	local level = UnitLevel(unit)
-
 	local name = UnitName(unit)
+
+	self._level = level
+	self._name = name
+	self._color = color
+
 	if powerBreak[unit] then
 		self.Name:SetText(string.sub(name, 1, 5))
 		if UnitName(unit) == playerName and unit ~= "pet" then
@@ -268,11 +271,13 @@ local Happiness_Update = function(self, event, unit)
 
 	local happiness = GetPetHappiness()
 	local col
+
 	if happiness then
 		col = colors.happy[happiness]
 	else
 		col = colors.mp[UnitPowerType(unit)]
 	end
+
 	self.Power:SetStatusBarColor(unpack(col))
 end
 
@@ -290,10 +295,6 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 	icon.unit = unit
 
 	name, rank, btexture, count, dtype, duration, timeLeft, isPlayer = UnitAura(unit, index, filter)
-
-	if not isPlayer then
-		icon:SetAlpha(0.6)
-	end
 
 	if isDebuff and timeLeft and timeLeft > 0 then
 		icon:SetScript("OnUpdate", durationTimer)
@@ -391,6 +392,18 @@ local CreateAuraIcon = function(self, icons, index, isDebuff)
 	table.insert(icons, button)
 
 	return button
+end
+
+local Combo_Update = function(self, event, unit)
+	if unit ~= "player" and self.unit ~= "target" then return end
+
+	local c = GetComboPoints(unit, "target")
+
+	if c == 0 then
+		c = self._level
+	end
+
+	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
 end
 
 local frame = function(settings, self, unit)
@@ -498,8 +511,11 @@ local frame = function(settings, self, unit)
 
 	self.RaidIcon = ricon
 
-	if unit == "target" or self:GetParent():GetName() == "oUF_Party" then
+	if unit == "target" or not unit then
 		if unit == "target" then
+			self.UNIT_COMBO_POINTS = Combo_Update
+			self:RegisterEvent("UNIT_COMBO_POINTS")
+
 			local b = CreateFrame("Frame", nil, self)
 			b:SetHeight(50)
 			b:SetWidth(width)
@@ -526,6 +542,39 @@ local frame = function(settings, self, unit)
 		self.PostUpdateAuraIcon = PostUpdateAuraIcon
 	end
 
+	--[[
+	if unit == "pet" or unit == "targettarget" then
+		local b = CreateFrame("Frame", nil, self)
+		b:SetHeight(25)
+		b:SetWidth(294 * 0.45)
+		b:SetPoint("TOP", self, "BOTTOM", 0, - 3)
+		b.size = 22
+		b["growth-x"] = unit == "pet" and "LEFT" or "RIGHT"
+		b.num = 5
+		self.Buffs = b
+
+		local d = CreateFrame("Frame", nil, self)
+		d:SetHeight(25)
+		d:SetWidth(294 * 0.45)
+		d:SetPoint("TOP")
+		d.size = 25
+		d["growth-x"] = unit == "pet" and "LEFT" or "RIGHT"
+		d.num = 5
+		self.Debuffs = d
+
+		if unit == "targettarget" then
+			b.initialAnchor = "TOPLEFT"
+			d.initialAnchor = "TOPLEFT"
+			b:SetPoint("LEFT", self, "LEFT", 3, 0)
+			d:SetPoint("LEFT", self, "RIGHT", 3, 0)
+		else
+			b.initialAnchor = "TOPRIGHT"
+			d.initialAnchor = "TOPRIGHT"
+			b:SetPoint("RIGHT", self, "RIGHT", 0, 0)
+			d:SetPoint("RIGHT", self, "LEFT", 0, 0)
+		end
+	end
+	]]
 	if unit == "targettarget" or unit == "pet" or unit == "focus" then
 	--	pval:Hide()
 	--	hval:Hide()
@@ -535,8 +584,8 @@ local frame = function(settings, self, unit)
 	end
 
 	if unit == "pet" then
-		self.Happiness = false
 		self.UNIT_HAPPINESS = Happiness_Update
+		self:RegisterEvent("UNIT_HAPPINESS")
 	end
 
 	if self:GetParent():GetName() == "oUF_Party" then
