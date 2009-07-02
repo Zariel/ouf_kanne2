@@ -1,4 +1,4 @@
-## Interface: 20400
+## Interface: 30100
 ## Title: oUF_Kanne2
 ## Notes: OH HI
 ## Dependencies: oUF
