@@ -28,6 +28,13 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 local _G = getfenv(0)
 local oUF = _G.oUF
 
+-- Lets kill some things eh?
+oUF.Tags = nil
+oUF.TagEvents = nil
+oUF.UnitlessTagEvents = nil
+oUF.Tag = nil
+oUF.Untag = nil
+
 local select = select
 local floor = math.floor
 local UnitName = UnitName
@@ -284,9 +291,10 @@ end
 local durationTimer = function(self, elapsed)
 	local expirationTime = select(7, UnitAura(self.unit, self:GetID(), "HARMFUL"))
 
-	if expirationTime and (expirationTime - GetTime()) < 300 then
+	if expirationTime and ((expirationTime - GetTime())) < 300 and expirationTime > 0 then
 		self.duration:SetText(floor(expirationTime - GetTime() + 0.5))
 	else
+		self.duration:Hide()
 		return self:SetScript("OnUpdate", nil)
 	end
 end
@@ -593,6 +601,8 @@ local frame = function(settings, self, unit)
 		self.inRangeAlpha = 1
 		self.outsideRangeAlpha = 0.4
 	end
+
+	--self.Heal = true
 
 	return self
 end

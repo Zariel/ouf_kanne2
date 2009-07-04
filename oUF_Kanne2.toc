@@ -1,7 +1,7 @@
 ## Interface: 30100
 ## Title: oUF_Kanne2
 ## Notes: OH HI
-## Dependencies: oUF
+## Dependencies: oUF, oUF_LibHeal
 ## Version: 1
 ## X-Credits: Lyn (This is his layout)
 
