@@ -224,8 +224,8 @@ local Power_Update = function(self, event, unit, bar, current, max)
 
 	val:SetText(current)
 
-	if unit ~= "pet" and UnitClass("player") ~= "hunter" then
-		local col = colors.mp[UnitPowerType(unit)] or {1, 1, 1}
+	if (unit == "pet" and not GetPetHappiness()) or unit ~= "pet" then
+		local col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
 		self.Power:SetStatusBarColor(unpack(col))
 		self.Power.bg:SetVertexColor(unpack(col))
 	end
@@ -510,6 +510,8 @@ local frame = function(settings, self, unit)
 	name:SetTextColor(1,1,1,1)
 
 	self.Name = name
+	self.UNIT_LEVEL = Name_Update
+	self:RegisterEvent("UNIT_LEVEL")
 	self.OverideUpdateName = Name_Update
 
 	local ricon = self:CreateTexture(nil, "OVERLAY")
