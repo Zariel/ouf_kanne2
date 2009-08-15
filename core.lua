@@ -530,10 +530,11 @@ local frame = function(settings, self, unit)
 			b:SetHeight(50)
 			b:SetWidth(width)
 			b:SetPoint("RIGHT")
-			b:SetPoint("BOTTOM", self, "TOP", 0, 3)
+			-- They now go under the TOT
+			b:SetPoint("TOP", self, "BOTTOM", 0, - 13)
 			b.num = 2 * floor(width/25)
 			b["growth-x"] = "LEFT"
-			b["growth-y"] = "UP"
+			b["growth-y"] = "DOWN"
 			b.size = 25
 			b.initialAnchor = "BOTTOMRIGHT"
 			self.Buffs = b
@@ -598,7 +599,7 @@ local frame = function(settings, self, unit)
 		self:RegisterEvent("UNIT_HAPPINESS")
 	end
 
-	if self:GetParent():GetName() == "oUF_Party" then
+	if not unit then
 		self.Range = true
 		self.inRangeAlpha = 1
 		self.outsideRangeAlpha = 0.4
@@ -624,10 +625,10 @@ oUF:RegisterStyle("Kanne2", style)
 oUF:SetActiveStyle("Kanne2")
 
 local player = oUF:Spawn("player")
-player:SetPoint("RIGHT", UIParent, "CENTER", -5, -200)
+player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
 
 local target = oUF:Spawn("target")
-target:SetPoint("LEFT", UIParent, "CENTER", 5, -200)
+target:SetPoint("LEFT", UIParent, "CENTER", 50, - 175)
 
 local party = oUF:Spawn("header", "oUF_Party")
 party:SetManyAttributes("showParty", true, "yOffset", -25)
