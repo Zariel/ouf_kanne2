@@ -194,9 +194,11 @@ local menu = function(self)
     end
 end
 
-local Health_Update = function(self, event, unit, bar, current, max)
-    bar:SetValue(current)
-    local val = bar.value
+local Health_Update = function(self, unit, min, max)
+    local current = UnitHealth(unit)
+
+    self:SetValue(current)
+    local val = self.value
 
     local form = format[unit]
     local per = floor(current * 100 / max)
@@ -226,8 +228,8 @@ local Power_Update = function(self, unit, current, max)
 
     if(unit == "pet" and not GetPetHappiness()) or unit ~= "pet" then
         local col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-        self.parent.Power:SetStatusBarColor(unpack(col))
-        self.parent.Power.bg:SetVertexColor(unpack(col))
+        self:GetParent().Power:SetStatusBarColor(unpack(col))
+        self:GetParent().Power.bg:SetVertexColor(unpack(col))
     end
 
     if powerBreak[unit] then
@@ -438,8 +440,6 @@ local Combo_Update = function(self, event, unit)
 end
 
 local frame = function(self, unit, single)
-    if(single) then
-    end
     self.menu = menu
 
     self:EnableMouse(true)
@@ -493,8 +493,10 @@ local frame = function(self, unit, single)
     hp.value = hval
     hp.bg = hpbg
     hp.per = per
+
+    hp.PostUpdate = Health_Update
+
     self.Health = hp
-    self.OverrideUpdateHealth = Health_Update
 
     local mp = CreateFrame("StatusBar", nil, self)
     mp:SetHeight(5)
@@ -520,8 +522,9 @@ local frame = function(self, unit, single)
 
     mp.value = pval
     mp.bg = mpbg
+    mp.PostUpdate = Power_Update
+
     self.Power = mp
-    self.OverrideUpdatePower = Power_Update
 
     local name = hp:CreateFontString(nil, "OVERLAY")
     name:SetPoint("LEFT", self, "LEFT", 14, 0)
@@ -534,10 +537,11 @@ local frame = function(self, unit, single)
     name:SetShadowOffset(1, -1)
     name:SetTextColor(1,1,1,1)
 
+    self.OverideUpdateName = Name_Update
+
     self.Name = name
     self.UNIT_LEVEL = Name_Update
     self:RegisterEvent("UNIT_LEVEL")
-    self.OverideUpdateName = Name_Update
 
     local ricon = self:CreateTexture(nil, "OVERLAY")
     ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
@@ -545,6 +549,14 @@ local frame = function(self, unit, single)
     ricon:SetWidth(16)
 
     self.RaidIcon = ricon
+
+    if(single) then
+        if(powerBreak[unit]) then
+            self:SetSize(width * 0.45, height * 0.8)
+        else
+            self:SetSize(width, height)
+        end
+    end
 
     if unit == "target" or not unit then
         if unit == "target" then
@@ -612,9 +624,9 @@ local frame = function(self, unit, single)
         end
     end
     ]]
-    if unit == "targettarget" or unit == "pet" or unit == "focus" then
-        --	pval:Hide()
-        --	hval:Hide()
+    if(powerBreak[unit]) then
+        --pval:Hide()
+        --hval:Hide()
         hp:SetWidth(294 * 0.45)
         hp:SetHeight(27 * 0.8)
         mp:SetHeight(7 * 0.8)
@@ -625,7 +637,7 @@ local frame = function(self, unit, single)
         self:RegisterEvent("UNIT_HAPPINESS")
     end
 
-    if not unit then
+    if(not unit) then
         self.Range = true
         self.inRangeAlpha = 1
         self.outsideRangeAlpha = 0.4
@@ -638,6 +650,7 @@ end
 
 
 oUF:Factory(function(self)
+    --[[
     local call_meta = { __call = frame }
     local style = setmetatable({
         ["initial-height"] = height,
@@ -648,8 +661,9 @@ oUF:Factory(function(self)
         ["initial-height"] = height * 0.8,
         ["initial-width"] = width * 0.45,
     }, call_meta)
+    ]]
 
-    oUF:RegisterStyle("Kanne2", style)
+    oUF:RegisterStyle("Kanne2", frame)
     oUF:SetActiveStyle("Kanne2")
 
     local player = oUF:Spawn("player")
@@ -658,13 +672,10 @@ oUF:Factory(function(self)
     local target = oUF:Spawn("target")
     target:SetPoint("LEFT", UIParent, "CENTER", 50, - 175)
 
-    local party = oUF:SpawnHeader(nil, nil, "raid,party,solo", "showParty", true, "yOffset", -25
+    local party = oUF:SpawnHeader(nil, nil, "raid,party,solo", "showParty", true, "yOffset", -25)
     party:SetPoint("LEFT", UIParent, "LEFT", 5, 0)
     party:SetPoint("TOP", MinimapCluster, "BOTTOM", 0, -20)
     party:Show()
-
-    oUF:RegisterStyle("Kanne2-tot", style_small)
-    oUF:SetActiveStyle("Kanne2-tot")
 
     local tot = oUF:Spawn("targettarget")
     tot:SetPoint("TOP", target, "BOTTOM", 0, -5)
@@ -677,5 +688,5 @@ oUF:Factory(function(self)
     local focus = oUF:Spawn("focus")
     focus:SetPoint("LEFT", player, "LEFT")
     focus:SetPoint("BOTTOM", player, "TOP", 0, 5)
-end
+end)
 
