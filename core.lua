@@ -218,16 +218,16 @@ local Health_Update = function(self, event, unit, bar, current, max)
 	end
 end
 
-local Power_Update = function(self, event, unit, bar, current, max)
-	bar:SetValue(current)
-	local val = bar.value
+local Power_Update = function(self, unit, current, max)
+	self:SetValue(current)
+	local val = self.value
 
 	val:SetText(current)
 
-	if (unit == "pet" and not GetPetHappiness()) or unit ~= "pet" then
+	if(unit == "pet" and not GetPetHappiness()) or unit ~= "pet" then
 		local col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-		self.Power:SetStatusBarColor(unpack(col))
-		self.Power.bg:SetVertexColor(unpack(col))
+		self.parent.Power:SetStatusBarColor(unpack(col))
+		self.parent.Power.bg:SetVertexColor(unpack(col))
 	end
 
 	if powerBreak[unit] then
@@ -302,7 +302,16 @@ end
 local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filter, isDebuff)
 	icon.unit = unit
 
-	name, rank, btexture, count, dtype, duration, timeLeft, isPlayer = UnitAura(unit, index, filter)
+	name, rank, btexture, count, dtype, duration, timeLeft, caster = UnitAura(unit, index, filter)
+
+	icon.name = name
+	icon.caster = caster
+
+	if caster and (caster == "player" or caster == "pet") then
+		icon:SetAlpha(1)
+	else
+		icon:SetAlpha(0.5)
+	end
 
 	if isDebuff and timeLeft and timeLeft > 0 then
 		icon:SetScript("OnUpdate", durationTimer)
@@ -317,6 +326,20 @@ local PostUpdateAuraIcon = function(self, icons, unit, icon, index, offset, filt
 	else
 		icon.overlay:SetVertexColor(0.45, 0.45, 0.45)
 	end
+end
+
+local PreAuraSetPosition = function(self, icons, max)
+	table.sort(icons, function(self, a, b)
+		if a and b then
+			if a.caster == "player" then
+				return true
+			else
+				return a.name < b.name
+			end
+		else
+			return false
+		end
+	end)
 end
 
 local OnEnter = function(self)
@@ -414,7 +437,9 @@ local Combo_Update = function(self, event, unit)
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
 end
 
-local frame = function(settings, self, unit)
+local frame = function(self, unit, single)
+    if(single) then
+    end
 	self.menu = menu
 
 	self:EnableMouse(true)
@@ -551,6 +576,7 @@ local frame = function(settings, self, unit)
 
 		self.CreateAuraIcon = CreateAuraIcon
 		self.PostUpdateAuraIcon = PostUpdateAuraIcon
+		--self.PreAuraSetPosition = PreAuraSetPosition
 	end
 
 	--[[
@@ -610,43 +636,46 @@ local frame = function(settings, self, unit)
 	return self
 end
 
-local call_meta = {__call = frame}
-local style = setmetatable({
-	["initial-height"] = height,
-	["initial-width"] = width,
-}, call_meta)
 
-local style_small = setmetatable({
-	["initial-height"] = height*0.8,
-	["initial-width"] = width*0.45,
-}, call_meta)
+oUF:Factory(function(self)
+    local call_meta = { __call = frame }
+    local style = setmetatable({
+            ["initial-height"] = height,
+            ["initial-width"] = width,
+    }, call_meta)
 
-oUF:RegisterStyle("Kanne2", style)
-oUF:SetActiveStyle("Kanne2")
+    local style_small = setmetatable({
+            ["initial-height"] = height * 0.8,
+            ["initial-width"] = width * 0.45,
+    }, call_meta)
 
-local player = oUF:Spawn("player")
-player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
+    oUF:RegisterStyle("Kanne2", style)
+    oUF:SetActiveStyle("Kanne2")
 
-local target = oUF:Spawn("target")
-target:SetPoint("LEFT", UIParent, "CENTER", 50, - 175)
+    local player = oUF:Spawn("player")
+    player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
 
-local party = oUF:Spawn("header", "oUF_Party")
-party:SetManyAttributes("showParty", true, "yOffset", -25)
-party:SetPoint("LEFT", UIParent, "LEFT", 5, 0)
-party:SetPoint("TOP", MinimapCluster, "BOTTOM", 0, -20)
-party:Show()
+    local target = oUF:Spawn("target")
+    target:SetPoint("LEFT", UIParent, "CENTER", 50, - 175)
 
-oUF:RegisterStyle("Kanne2-tot", style_small)
-oUF:SetActiveStyle("Kanne2-tot")
+    local party = oUF:SpawnHeader(nil, nil, "raid,party,solo", "showParty", true, "yOffset", -25
+    party:SetPoint("LEFT", UIParent, "LEFT", 5, 0)
+    party:SetPoint("TOP", MinimapCluster, "BOTTOM", 0, -20)
+    party:Show()
 
-local tot = oUF:Spawn("targettarget")
-tot:SetPoint("TOP", target, "BOTTOM", 0, -5)
-tot:SetPoint("RIGHT", target, "RIGHT")
+    oUF:RegisterStyle("Kanne2-tot", style_small)
+    oUF:SetActiveStyle("Kanne2-tot")
 
-local pet = oUF:Spawn("pet")
-pet:SetPoint("RIGHT", player, "RIGHT")
-pet:SetPoint("TOP", player, "BOTTOM", 0, -5)
+    local tot = oUF:Spawn("targettarget")
+    tot:SetPoint("TOP", target, "BOTTOM", 0, -5)
+    tot:SetPoint("RIGHT", target, "RIGHT")
 
-local focus = oUF:Spawn("focus")
-focus:SetPoint("LEFT", player, "LEFT")
-focus:SetPoint("BOTTOM", player, "TOP", 0, 5)
+    local pet = oUF:Spawn("pet")
+    pet:SetPoint("RIGHT", player, "RIGHT")
+    pet:SetPoint("TOP", player, "BOTTOM", 0, -5)
+
+    local focus = oUF:Spawn("focus")
+    focus:SetPoint("LEFT", player, "LEFT")
+    focus:SetPoint("BOTTOM", player, "TOP", 0, 5)
+end
+
