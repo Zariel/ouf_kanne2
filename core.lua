@@ -308,20 +308,20 @@ local PostUpdateAuraIcon = function(self, unit, icon, index, offset)
 	icon.name = name
 	icon.caster = caster
 
-	if caster and (caster == "player" or caster == "pet") then
+	if(caster and (caster == "player" or caster == "pet")) then
 		icon:SetAlpha(1)
 	else
 		icon:SetAlpha(0.5)
 	end
 
-	if icon.isDebuff and timeLeft and timeLeft > 0 then
+	if(icon.debuff and timeLeft and timeLeft > 0) then
 		icon:SetScript("OnUpdate", durationTimer)
 		icon.duration:Show()
 	else
 		icon.duration:Hide()
 	end
 
-	if icon.isDebuff then
+	if icon.debuff then
 		local col = DebuffTypeColor[dtype or "none"]
 		icon.overlay:SetVertexColor(col.r, col.g, col.b)
 	else
@@ -349,9 +349,9 @@ local OnEnter = function(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
 
 	if(self.debuff) then
-		GameTooltip:SetUnitDebuff(self.frame.unit, self:GetID(), self.parent.filter)
+		GameTooltip:SetUnitDebuff(self.parent.unit, self:GetID(), self.parent.filter)
 	else
-		GameTooltip:SetUnitBuff(self.frame.unit, self:GetID(), self.parent.filter)
+		GameTooltip:SetUnitBuff(self.parent.unit, self:GetID(), self.parent.filter)
 	end
 end
 
@@ -575,6 +575,7 @@ local frame = function(self, unit, single)
 			b.initialAnchor = "BOTTOMRIGHT"
 			self.Buffs = b
 
+			b.unit = unit
 			b.CreateIcon = CreateAuraIcon
 			b.PostUpdateIcon = PostUpdateAuraIcon
 		end
@@ -588,6 +589,7 @@ local frame = function(self, unit, single)
 		d.num = 6
 		self.Debuffs = d
 
+		d.unit = unit
 		d.CreateIcon = CreateAuraIcon
 		d.PostUpdateIcon = PostUpdateAuraIcon
 		--self.PreAuraSetPosition = PreAuraSetPosition
