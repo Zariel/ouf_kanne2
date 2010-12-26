@@ -163,24 +163,24 @@ local powerBreak = {
 }
 
 local ColorGradient = function(perc, r1, g1, b1, r2, g2, b2, r3, g3, b3)
-	if perc >= 1 then
-		return {r3, g3, b3}
-	elseif perc <= 0 then
-		return {r1, g1, b1}
+	if(perc >= 1) then
+		return { r3, g3, b3 }
+	elseif(perc <= 0) then
+		return { r1, g1, b1 }
 	end
 
-	local segment, relperc = math.modf(perc*(3-1))
-	local offset = (segment*3)+1
+	local segment, relperc = math.modf(perc * (3 - 1))
+	local offset = (segment * 3) + 1
 
 	if(offset == 1) then
-		return {r1 + (r2-r1)*relperc, g1 + (g2-g1)*relperc, b1 + (b2-b1)*relperc}
+		return { r1 + (r2 - r1) * relperc, g1 + (g2 - g1) * relperc, b1 + (b2 - b1) * relperc}
 	end
 
-	return {r2 + (r3-r2)*relperc, g2 + (g3-g2)*relperc, b2 + (b3-b2)*relperc}
+	return { r2 + (r3 - r2) * relperc, g2 + (g3 - g2) * relperc, b2 + (b3 - b2) * relperc }
 end
 
-local toHex = function(r,g,b)
-	return string.format("%02x%02x%02x", r*255, g*255, b*255)
+local toHex = function(r, g, b)
+	return string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
 end
 
 local menu = function(self)
@@ -201,15 +201,16 @@ local Health_Update = function(self, unit, current, max)
 	local form = format[unit]
 	local per = floor(current * 100 / max)
 
-	if per == 100 or per == 0 then
+	if(per == 100 or per == 0) then
 		val:Hide()
 	else
 		val:Show()
-		if powerBreak[unit] then
+		if(powerBreak[unit]) then
 			val:SetFormattedText(form.health_full, per)
 		else
 			local col = toHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
-			if current == per then
+			-- current will never == per ??
+			if(current == per) then
 				val:SetFormattedText(form.health_perOnly, col, per)
 			else
 				val:SetFormattedText(form.health_per, col, current, per)
@@ -224,12 +225,20 @@ local Power_Update = function(self, unit, current, max)
 
 	val:SetText(current)
 
+	local col
 	if(unit == "pet") then
+		local happiness = GetPetHappiness()
+		if(happiness) then
+			col = colors.happy[happiness]
+		else
+			col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
+		end
 	else
-		local col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-		self:GetParent().Power:SetStatusBarColor(unpack(col))
-		self:GetParent().Power.bg:SetVertexColor(unpack(col))
+		col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
 	end
+
+	self:GetParent().Power:SetStatusBarColor(unpack(col))
+	self:GetParent().Power.bg:SetVertexColor(unpack(col))
 
 	if(powerBreak[unit]) then
 		return val:Hide()
@@ -244,7 +253,8 @@ end
 
 local Name_Update = function(self, event, unit)
 	if self.unit ~= unit then return end
-	if unit == "player" then
+
+	if(unit == "player") then
 		self.Name:Hide()
 	else
 		self.Name:Show()
@@ -262,9 +272,10 @@ local Name_Update = function(self, event, unit)
 	self._name = name
 	self._color = color
 
-	if powerBreak[unit] then
+	if(powerBreak[unit]) then
 		self.Name:SetText(string.sub(name, 1, 5))
-		if UnitName(unit) == playerName and unit ~= "pet" then
+		-- Incase playerName == petName
+		if(name == playerName and unit ~= "pet") then
 			self.Name:SetTextColor(1,0,0)
 		else
 			self.Name:SetTextColor(1, 1, 1)
@@ -272,21 +283,6 @@ local Name_Update = function(self, event, unit)
 	else
 		self.Name:SetFormattedText(format.all.name, toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
 	end
-end
-
-local Happiness_Update = function(self, event, unit)
-	if(unit ~= self.unit or not HasPetUI()) then return end
-
-	local happiness = GetPetHappiness()
-	local col
-
-	if happiness then
-		col = colors.happy[happiness]
-	else
-		col = colors.mp[UnitPowerType(unit)]
-	end
-
-	self.Power:SetStatusBarColor(unpack(col))
 end
 
 local durationTimer = function(self, elapsed)
@@ -347,12 +343,7 @@ local OnEnter = function(self)
 	if(not self:IsVisible()) then return end
 
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-
-	if(self.debuff) then
-		GameTooltip:SetUnitDebuff(self.parent.unit, self:GetID(), self.parent.filter)
-	else
-		GameTooltip:SetUnitBuff(self.parent.unit, self:GetID(), self.parent.filter)
-	end
+	GameTooltip:SetUnitAura(self.parent.unit, self:GetID(), self.filter)
 end
 
 local OnLeave = function()
@@ -431,7 +422,7 @@ local Combo_Update = function(self, event, unit)
 
 	local c = GetComboPoints(unit, "target")
 
-	if c == 0 then
+	if(c == 0) then
 		c = self._level
 	end
 
@@ -634,12 +625,6 @@ local frame = function(self, unit, single)
 		hp:SetWidth(294 * 0.45)
 		hp:SetHeight(27 * 0.8)
 		mp:SetHeight(7 * 0.8)
-	end
-
-	if unit == "pet" then
-		self.UNIT_HAPPINESS = Happiness_Update
-		self:RegisterEvent("UNIT_HAPPINESS")
-		table.insert(self.__elements, Happiness_Update)
 	end
 
 	if(not unit) then
