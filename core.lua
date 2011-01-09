@@ -25,8 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 
-local _G = getfenv(0)
-local oUF = _G.oUF
+local layout = ns.layout
 
 -- Lets kill some things eh?
 oUF.Tags = nil
@@ -48,11 +47,9 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 local height, width = 35, 250
 local playerName = UnitName("player")
 
-local supernova = [[Interface\AddOns\oUF_Kanne2\media\nokiafc22.ttf]]
-local texture = [[Interface\AddOns\oUF_Kanne2\media\HalV.tga]]
-local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
-
-local name, rank, btexture, count, dtype, duration, timeLeft, isPlayer
+local supernova = [[Interface\AddOns\layout_Kanne2\media\nokiafc22.ttf]]
+local texture = [[Interface\AddOns\layout_Kanne2\media\HalV.tga]]
+local apathy = [[Interface\AddOns\layout_Kanne2\media\Normal.tga]]
 
 local dummy = function() end
 
@@ -81,7 +78,7 @@ do
 		end
 	end
 
-	oUF:AddElement("Name", update, enable, disable)
+	layout:AddElement("Name", update, enable, disable)
 end
 
 local colors = {
@@ -156,28 +153,6 @@ for k, v in pairs(format) do
 	end
 end
 
-local powerBreak = {
-	["targettarget"] = true,
-	["focus"] = true,
-	["pet"] = true,
-}
-
-local ColorGradient = function(perc, r1, g1, b1, r2, g2, b2, r3, g3, b3)
-	if(perc >= 1) then
-		return { r3, g3, b3 }
-	elseif(perc <= 0) then
-		return { r1, g1, b1 }
-	end
-
-	local segment, relperc = math.modf(perc * (3 - 1))
-	local offset = (segment * 3) + 1
-
-	if(offset == 1) then
-		return { r1 + (r2 - r1) * relperc, g1 + (g2 - g1) * relperc, b1 + (b2 - b1) * relperc}
-	end
-
-	return { r2 + (r3 - r2) * relperc, g2 + (g3 - g2) * relperc, b2 + (b3 - b2) * relperc }
-end
 
 local toHex = function(r, g, b)
 	return string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
@@ -194,228 +169,6 @@ local menu = function(self)
 	end
 end
 
-local Health_Update = function(self, unit, current, max)
-	self:SetValue(current)
-	local val = self.value
-
-	local form = format[unit]
-	local per = floor(current * 100 / max)
-
-	if(per == 100 or per == 0) then
-		val:Hide()
-	else
-		val:Show()
-		if(powerBreak[unit]) then
-			val:SetFormattedText(form.health_full, per)
-		else
-			local col = toHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
-			-- current will never == per ??
-			if(current == per) then
-				val:SetFormattedText(form.health_perOnly, col, per)
-			else
-				val:SetFormattedText(form.health_per, col, current, per)
-			end
-		end
-	end
-end
-
-local Power_Update = function(self, unit, current, max)
-	self:SetValue(current)
-	local val = self.value
-
-	val:SetText(current)
-
-	local col
-	if(unit == "pet") then
-		local happiness = GetPetHappiness()
-		if(happiness) then
-			col = colors.happy[happiness]
-		else
-			col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-		end
-	else
-		col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-	end
-
-	self:GetParent().Power:SetStatusBarColor(unpack(col))
-	self:GetParent().Power.bg:SetVertexColor(unpack(col))
-
-	if(powerBreak[unit]) then
-		return val:Hide()
-	end
-
-	if(current == max or current == 0) then
-		val:Hide()
-	else
-		val:Show()
-	end
-end
-
-local Name_Update = function(self, event, unit)
-	if self.unit ~= unit then return end
-
-	if(unit == "player") then
-		self.Name:Hide()
-	else
-		self.Name:Show()
-	end
-
-	local class = select(2, UnitClass(unit))
-	local color = colors.class[class] or { 1, 1, 1 }
-	self.Health:SetStatusBarColor(unpack(color))
-	self.Health.bg:SetVertexColor(unpack(color))
-
-	local level = UnitLevel(unit)
-	local name = UnitName(unit)
-
-	self._level = level
-	self._name = name
-	self._color = color
-
-	if(powerBreak[unit]) then
-		self.Name:SetText(string.sub(name, 1, 5))
-		-- Incase playerName == petName
-		if(name == playerName and unit ~= "pet") then
-			self.Name:SetTextColor(1, 0, 0)
-		else
-			self.Name:SetTextColor(1, 1, 1)
-		end
-	else
-		self.Name:SetFormattedText(format.all.name, toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
-	end
-end
-
-local durationTimer = function(self, elapsed)
-	local expirationTime = select(7, UnitAura(self.unit, self:GetID(), "HARMFUL"))
-
-	if expirationTime and ((expirationTime - GetTime())) < 300 and expirationTime > 0 then
-		self.duration:SetText(floor(expirationTime - GetTime() + 0.5))
-	else
-		self.duration:Hide()
-		return self:SetScript("OnUpdate", nil)
-	end
-end
-
-local PostUpdateAuraIcon = function(self, unit, icon, index, offset)
-	icon.unit = unit
-
-	name, rank, btexture, count, dtype, duration, timeLeft, caster = UnitAura(unit, index, icon.filter)
-
-	icon.name = name
-	icon.caster = caster
-
-	if(caster and (caster == "player" or caster == "pet")) then
-		icon:SetAlpha(1)
-	else
-		icon:SetAlpha(0.5)
-	end
-
-	if(icon.debuff and timeLeft and timeLeft > 0) then
-		icon:SetScript("OnUpdate", durationTimer)
-		icon.duration:Show()
-	else
-		icon.duration:Hide()
-	end
-
-	if icon.debuff then
-		local col = DebuffTypeColor[dtype or "none"]
-		icon.overlay:SetVertexColor(col.r, col.g, col.b)
-	else
-		icon.overlay:SetVertexColor(0.45, 0.45, 0.45)
-	end
-end
-
-local PreAuraSetPosition = function(self, icons, max)
-	table.sort(icons, function(self, a, b)
-		if a and b then
-			if a.caster == "player" then
-				return true
-			else
-				return a.name < b.name
-			end
-		else
-			return false
-		end
-	end)
-end
-
-local OnEnter = function(self)
-	if(not self:IsVisible()) then return end
-
-	GameTooltip:SetOwner(self, "ANCHOR_BOTTOMRIGHT")
-	GameTooltip:SetUnitAura(self.parent.unit, self:GetID(), self.filter)
-end
-
-local OnLeave = function()
-	return GameTooltip:Hide()
-end
-
-local condom = setmetatable({}, { __index = function()
-	return dummy
-end})
-
-local CreateAuraIcon = function(icons, index)
-	local size = icons.size or 16
-
-	local button = CreateFrame("Frame", nil, icons)
-	button:SetHeight(size)
-	button:SetWidth(size)
-	button:SetID(index)
-	button:EnableMouse(true)
-
-	local icon = button:CreateTexture(nil, "BACKGROUND")
-	icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-	icon:SetPoint("LEFT", 1, 0)
-	icon:SetPoint("RIGHT", -1, 0)
-	icon:SetPoint("TOP", 0, -1)
-	icon:SetPoint("BOTTOM", 0, 1)
-
-	local skin = button:CreateTexture(nil, "OVERLAY")
-	skin:SetTexture(apathy)
-	skin:SetBlendMode("BLEND")
-	skin:SetPoint("TOP", 0, 2)
-	skin:SetPoint("LEFT", -2, 0)
-	skin:SetPoint("BOTTOM", 0, -2)
-	skin:SetPoint("RIGHT", 2, 0)
-	skin:SetHeight(size + 2)
-	skin:SetWidth(size + 2)
-	skin:SetVertexColor(0.45, 0.45, 0.45)
-	skin:Show()
-	skin.Hide = dummy
-
-	local count = button:CreateFontString(nil, "OVERLAY")
-	count:SetFont(supernova, 10, "THINOUTLINE")
-	count:SetShadowColor(0, 0, 0, 1)
-	count:SetShadowOffset(1, -1)
-	count:SetTextColor(1, 1, 0)
-	count:SetPoint("BOTTOMRIGHT", -1, 1)
-	count:SetJustifyH("RIGHT")
-
-	local duration = button:CreateFontString(nil, "OVERLAY")
-	duration:SetFont(supernova, 13, "OUTLINE")
-	duration:SetShadowColor(0, 0, 0, 0.8)
-	duration:SetShadowOffset(1, -1)
-	duration:SetTextColor(1, 0, 0)
-	duration:SetPoint("TOPLEFT", 1, -1)
-	duration:SetJustifyH("LEFT")
-
-	button:SetScript("OnEnter", OnEnter)
-	button:SetScript("OnLeave", OnLeave)
-
-	button.parent = icons
-	button.frame = self
-	button.icon = icon
-	button.overlay = skin
-	button.count = count
-	button.duration = duration
-
-	button.cd = condom
-	button.cd.noCooldownCount = true
-
-	table.insert(icons, button)
-
-	return button
-end
 
 local Combo_Update = function(self, event, unit)
 	if(unit ~= "player" and self.unit ~= "target") then return end
@@ -429,34 +182,6 @@ local Combo_Update = function(self, event, unit)
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
 end
 
-local Heal_Update = function(self, event, unit)
-	if(self.unit ~= unit) then return end
-
-	local hp = self.HealPrediction
-	local incHeal = UnitGetIncomingHeals(unit)
-
-	if(incHeal) then
-		local min, max = UnitHealth(unit), UnitHealthMax(unit)
-		local per = min / max
-		local incPer = incHeal / max
-		local incSize = incPer * width
-		local size = per * width
-
-		if(incSize + size >= width) then
-			incSize = width - size
-		end
-
-		if(incSize > 0) then
-			hp:SetWidth(incSize)
-			hp:SetPoint("LEFT", self, "LEFT", size, 0)
-			hp:Show()
-		else
-			hp:Hide()
-		end
-	else
-		hp:Hide()
-	end
-end
 
 local frame = function(self, unit, single)
 	self.menu = menu
@@ -513,7 +238,7 @@ local frame = function(self, unit, single)
 	hp.bg = hpbg
 	hp.per = per
 
-	hp.PostUpdate = Health_Update
+	hp.PostUpdate = self.Health_Update
 
 	self.Health = hp
 
@@ -526,7 +251,7 @@ local frame = function(self, unit, single)
 	pred:SetVertexColor(0, 1, 0, 0.8)
 	pred:Hide()
 
-	pred.Override = Heal_Update
+	pred.Override = self.Heal_Update
 
 	self.HealPrediction = pred
 
@@ -684,7 +409,7 @@ local frame = function(self, unit, single)
 end
 
 
-oUF:Factory(function(self)
+layout:Factory(function(self)
 	--[[
 	local call_meta = { __call = frame }
 	local style = setmetatable({
@@ -698,20 +423,20 @@ oUF:Factory(function(self)
 	}, call_meta)
 	]]
 
-	oUF:RegisterStyle("Kanne2", frame)
-	oUF:SetActiveStyle("Kanne2")
+	layout:RegisterStyle("Kanne2", frame)
+	layout:SetActiveStyle("Kanne2")
 
 	for i = 1, 5 do
-		oUF:DisableBlizzard("boss" .. i)
+		layout:DisableBlizzard("boss" .. i)
 	end
 
-	local player = oUF:Spawn("player")
+	local player = layout:Spawn("player")
 	player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
 
-	local target = oUF:Spawn("target")
+	local target = layout:Spawn("target")
 	target:SetPoint("LEFT", UIParent, "CENTER", 50, - 175)
 
-	local party = oUF:SpawnHeader(nil, nil, "raid,party,solo", "showParty", true, "yOffset", -25,
+	local party = layout:SpawnHeader(nil, nil, "raid,party,solo", "showParty", true, "yOffset", -25,
 		"oUF-initialConfigFunction", string.format([[
 		self:SetHeight(%d)
 		self:SetWidth(%d)
@@ -721,15 +446,15 @@ oUF:Factory(function(self)
 	party:SetPoint("TOP", MinimapCluster, "BOTTOM", 0, -20)
 	party:Show()
 
-	local tot = oUF:Spawn("targettarget")
+	local tot = layout:Spawn("targettarget")
 	tot:SetPoint("TOP", target, "BOTTOM", 0, -5)
 	tot:SetPoint("RIGHT", target, "RIGHT")
 
-	local pet = oUF:Spawn("pet")
+	local pet = layout:Spawn("pet")
 	pet:SetPoint("RIGHT", player, "RIGHT")
 	pet:SetPoint("TOP", player, "BOTTOM", 0, -5)
 
-	local focus = oUF:Spawn("focus")
+	local focus = layout:Spawn("focus")
 	focus:SetPoint("LEFT", player, "LEFT")
 	focus:SetPoint("BOTTOM", player, "TOP", 0, 5)
 end)
