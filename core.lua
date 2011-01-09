@@ -276,7 +276,7 @@ local Name_Update = function(self, event, unit)
 		self.Name:SetText(string.sub(name, 1, 5))
 		-- Incase playerName == petName
 		if(name == playerName and unit ~= "pet") then
-			self.Name:SetTextColor(1,0,0)
+			self.Name:SetTextColor(1, 0, 0)
 		else
 			self.Name:SetTextColor(1, 1, 1)
 		end
@@ -429,6 +429,35 @@ local Combo_Update = function(self, event, unit)
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
 end
 
+local Heal_Update = function(self, event, unit)
+	if(self.unit ~= unit) then return end
+
+	local hp = self.HealPrediction
+	local incHeal = UnitGetIncomingHeals(unit)
+
+	if(incHeal) then
+		local min, max = UnitHealth(unit), UnitHealthMax(unit)
+		local per = min / max
+		local incPer = incHeal / max
+		local incSize = incPer * width
+		local size = per * width
+
+		if(incSize + size >= width) then
+			incSize = width - size
+		end
+
+		if(incSize > 0) then
+			hp:SetWidth(incSize)
+			hp:SetPoint("LEFT", self, "LEFT", size, 0)
+			hp:Show()
+		else
+			hp:Hide()
+		end
+	else
+		hp:Hide()
+	end
+end
+
 local frame = function(self, unit, single)
 	self.menu = menu
 
@@ -488,6 +517,19 @@ local frame = function(self, unit, single)
 
 	self.Health = hp
 
+	local pred = hp:CreateTexture(nil, "OVERLAY")
+	pred:SetPoint("TOP", hp)
+	pred:SetPoint("BOTTOM", hp)
+	pred:SetHeight(30)
+	pred:SetWidth(0)
+	pred:SetTexture(texture)
+	pred:SetVertexColor(0, 1, 0, 0.8)
+	pred:Hide()
+
+	pred.Override = Heal_Update
+
+	self.HealPrediction = pred
+
 	local mp = CreateFrame("StatusBar", nil, self)
 	mp:SetHeight(5)
 	mp:SetWidth(width)
@@ -517,7 +559,7 @@ local frame = function(self, unit, single)
 	self.Power = mp
 
 	local name = hp:CreateFontString(nil, "OVERLAY")
-	name:SetPoint("LEFT", self, "LEFT", 14, 0)
+	name:SetPoint("LEFT", self, "LEFT", 20, 0)
 	name:SetPoint("TOP", 0, -5)
 	name:SetPoint("BOTTOM", 0, 5)
 	name:SetPoint("RIGHT", hval, "LEFT")
@@ -533,7 +575,7 @@ local frame = function(self, unit, single)
 	self.UNIT_LEVEL = Name_Update
 	self:RegisterEvent("UNIT_LEVEL")
 
-	local ricon = self:CreateTexture(nil, "OVERLAY")
+	local ricon = hp:CreateTexture(nil, "OVERLAY")
 	ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
 	ricon:SetHeight(16)
 	ricon:SetWidth(16)
@@ -543,6 +585,9 @@ local frame = function(self, unit, single)
 	if(single) then
 		if(powerBreak[unit]) then
 			self:SetSize(width * 0.45, height * 0.8)
+			hp:SetWidth(294 * 0.45)
+			hp:SetHeight(27 * 0.8)
+			mp:SetHeight(7 * 0.8)
 		else
 			self:SetSize(width, height)
 		end
@@ -655,6 +700,10 @@ oUF:Factory(function(self)
 
 	oUF:RegisterStyle("Kanne2", frame)
 	oUF:SetActiveStyle("Kanne2")
+
+	for i = 1, 5 do
+		oUF:DisableBlizzard("boss" .. i)
+	end
 
 	local player = oUF:Spawn("player")
 	player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
