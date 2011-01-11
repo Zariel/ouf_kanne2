@@ -458,6 +458,15 @@ local Heal_Update = function(self, event, unit)
 	end
 end
 
+local Holy_Update = function(self, event, unit, powerType)
+	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
+
+	local hp = self.HolyPower
+	local min = UnitPower('player', SPELL_POWER_HOLY_POWER)
+	hp:SetMinMaxValues(0, MAX_HOLY_POWER)
+	hp:SetValue(min)
+end
+
 local frame = function(self, unit, single)
 	self.menu = menu
 
@@ -629,6 +638,30 @@ local frame = function(self, unit, single)
 		d.CreateIcon = CreateAuraIcon
 		d.PostUpdateIcon = PostUpdateAuraIcon
 		--self.PreAuraSetPosition = PreAuraSetPosition
+	end
+
+	if(unit == "player") then
+		local _, class = UnitClass(unit)
+		if(class == "PALADIN") then
+			local holy = CreateFrame("Statusbar")
+			holy:SetWidth(width)
+			holy:SetHeight(5)
+			holy:SetPoint("BOTTOMLEFT", self, "TOPLEFT")
+			holy:SetPoint("BOTTOMRIGHT", self, "TOPRIGHT")
+			holy:SetStatusBarTexture(texture)
+			local col = colors.mp[9]
+			holy:SetStatusBarColor(col.r, col.g, col.b)
+
+			local hobg = holy:CreateTexture(nil, "BORDER")
+			hobg:SetAllPoints(holy)
+			hobg:SetTexture(texture)
+			hobg:SetVertexColor(col.r, col.g, col.b, 0.3)
+
+			holy.bg = hobg
+			holy.Override = Holy_Update
+
+			self.HolyPower = holy
+		end
 	end
 
 	--[[
