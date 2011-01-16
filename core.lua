@@ -440,6 +440,7 @@ local Heal_Update = function(self, event, unit)
 		local min, max = UnitHealth(unit), UnitHealthMax(unit)
 		local per = min / max
 		local incPer = incHeal / max
+		local width = self.Health:GetWidth()
 		local incSize = incPer * width
 		local size = per * width
 
@@ -466,6 +467,7 @@ local Holy_Update = function(self, event, unit, powerType)
 	local min = UnitPower('player', SPELL_POWER_HOLY_POWER)
 	hp:SetValue(min)
 end
+
 local Eclipse__Update = function(self, unit)
 	local val = UnitPower("player", SPELL_POWER_ECLIPSE)
 	self:SetValue(math.abs(val))
@@ -602,7 +604,7 @@ local frame = function(self, unit, single)
 	if(single) then
 		if(powerBreak[unit]) then
 			self:SetSize(width * 0.45, height * 0.8)
-			hp:SetWidth(294 * 0.45)
+			hp:SetWidth(width * 0.45)
 			hp:SetHeight(27 * 0.8)
 			mp:SetHeight(7 * 0.8)
 		else
@@ -727,13 +729,6 @@ local frame = function(self, unit, single)
 		end
 	end
 	]]
-	if(powerBreak[unit]) then
-		--pval:Hide()
-		--hval:Hide()
-		hp:SetWidth(294 * 0.45)
-		hp:SetHeight(27 * 0.8)
-		mp:SetHeight(7 * 0.8)
-	end
 
 	if(not unit) then
 		self.Range = true
