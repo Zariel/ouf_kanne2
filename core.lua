@@ -49,19 +49,15 @@ local height, width = 35, 250
 local playerName = UnitName("player")
 local _, playerClass = UnitClass("player")
 
-local supernova = [[Interface\AddOns\Kanne2\media\nokiafc22.ttf]]
-local texture = [[Interface\AddOns\Kanne2\media\HalV.tga]]
-local apathy = [[Interface\AddOns\Kanne2\media\Normal.tga]]
+local supernova = [[Interface\AddOns\oUF_Kanne2\media\nokiafc22.ttf]]
+local texture = [[Interface\AddOns\oUF_Kanne2\media\HalV.tga]]
+local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
 
 local dummy = function() end
 
 local powerBreak = ns.powerBreak
 local colors = ns.colors
 local format = ns.format
-
-local toHex = function(r, g, b)
-	return string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
-end
 
 local menu = function(self)
 	local unit = self.unit:sub(1, -2)
@@ -129,7 +125,7 @@ local frame = function(self, unit, single)
 	hp.bg = hpbg
 	hp.per = per
 
-	hp.PostUpdate = self.Health_Update
+	hp.PostUpdate = layout.Health_Update
 
 	self.Health = hp
 
@@ -142,7 +138,7 @@ local frame = function(self, unit, single)
 	pred:SetVertexColor(0, 1, 0, 0.8)
 	pred:Hide()
 
-	pred.Override = self.Heal_Update
+	pred.Override = layout.Heal_Update
 
 	self.HealPrediction = pred
 
@@ -171,7 +167,7 @@ local frame = function(self, unit, single)
 	mp.value = pval
 	mp.bg = mpbg
 	-- TODO: Override
-	mp.PostUpdate = self.Power_Update
+	mp.PostUpdate = layout.Power_Update
 
 	self.Power = mp
 
@@ -186,10 +182,10 @@ local frame = function(self, unit, single)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
 
-	name.Override = self.Name_Update
+	name.Override = layout.Name_Update
 
 	self.Name = name
-	self:RegisterEvent("UNIT_LEVEL", self.Name_Update)
+	self:RegisterEvent("UNIT_LEVEL", layout.Name_Update)
 
 	local ricon = hp:CreateTexture(nil, "OVERLAY")
 	ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
@@ -211,8 +207,8 @@ local frame = function(self, unit, single)
 
 	if unit == "target" or not unit then
 		if unit == "target" then
-			if(self.Combo_Update) then
-				self:RegisterEvent("UNIT_COMBO_POINTS", self.Combo_Update)
+			if(layout.Combo_Update) then
+				self:RegisterEvent("UNIT_COMBO_POINTS", layout.Combo_Update)
 			end
 
 			local b = CreateFrame("Frame", nil, self)
@@ -229,8 +225,8 @@ local frame = function(self, unit, single)
 			self.Buffs = b
 
 			b.unit = unit
-			b.CreateIcon = CreateAuraIcon
-			b.PostUpdateIcon = PostUpdateAuraIcon
+			b.CreateIcon = layout.CreateAuraIcon
+			b.PostUpdateIcon = layout.PostUpdateAuraIcon
 		end
 
 		local d = CreateFrame("Frame", nil, self)
@@ -243,13 +239,13 @@ local frame = function(self, unit, single)
 		self.Debuffs = d
 
 		d.unit = unit
-		d.CreateIcon = CreateAuraIcon
-		d.PostUpdateIcon = PostUpdateAuraIcon
+		d.CreateIcon = layout.CreateAuraIcon
+		d.PostUpdateIcon = layout.PostUpdateAuraIcon
 		--self.PreAuraSetPosition = PreAuraSetPosition
 	end
 
 	if(unit == "player") then
-		if(self.Holy_Update) then
+		if(layout.Holy_Update) then
 			local holy = CreateFrame("StatusBar", nil, self)
 			--holy:SetWidth(width)
 			holy:SetHeight(3)
@@ -267,10 +263,10 @@ local frame = function(self, unit, single)
 			hobg:SetVertexColor(col.r, col.g, col.b, 0.3)
 
 			holy.bg = hobg
-			holy.Override = self.Holy_Update
+			holy.Override = layout.Holy_Update
 
 			self.HolyPower = holy
-		elseif(self.Eclipse_Update) then
+		elseif(layout.Eclipse_Update) then
 			local eclipse = CreateFrame("StatusBar", nil, self)
 			eclipse:SetHeight(3)
 			eclipse:SetStatusBarTexture(texture)
@@ -278,9 +274,9 @@ local frame = function(self, unit, single)
 			eclipse:SetPoint("RIGHT", self, "RIGHT")
 			eclipse:SetPoint("LEFT", self, "LEFT")
 
-			eclipse.PostUpdatePower = self.Eclipse_Update
-			eclipse.PostUpdateVisibility = self.Eclipse_Update
-			eclipse.PostDirectionChange = self.Eclipse_Update
+			eclipse.PostUpdatePower = layout.Eclipse_Update
+			eclipse.PostUpdateVisibility = layout.Eclipse_Update
+			eclipse.PostDirectionChange = layout.Eclipse_Update
 
 			local ebg = eclipse:CreateTexture(nil, "BORDER")
 			ebg:SetAllPoints(eclipse)
