@@ -3,11 +3,11 @@ local layout = ns.layout
 
 local update = function(self, event, unit)
 	if(self.unit ~= unit) then return end
-	if(self.OverideUpdateName) then
-		self:OverideUpdateName(event, unit)
+	local Name = self.Name
+	if(Name.OverideUpdateName) then
+		Name:OverideUpdateName(event, unit)
 	else
-		local name = UnitName(unit)
-		self.Name:SetText(name)
+		Name:SetText(UnitName(unit))
 	end
 end
 
