@@ -1,7 +1,12 @@
 local parent, ns = ...
 local layout = ns.layout
 if(not layout) then return end
+
 local powerBreak = ns.powerBreak
+local format = ns.format
+local colors = ns.colors
+
+local height, width = ns.height, ns.width
 
 local ColorGradient = function(perc, r1, g1, b1, r2, g2, b2, r3, g3, b3)
 	if(perc >= 1) then
@@ -63,7 +68,7 @@ function layout:Health_Update(unit, current, max)
 		if(powerBreak[unit]) then
 			val:SetFormattedText(form.health_full, per)
 		else
-			local col = toHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
+			local col = ns:ToHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
 			-- current will never == per ??
 			if(current == per) then
 				val:SetFormattedText(form.health_perOnly, col, per)
@@ -73,7 +78,7 @@ function layout:Health_Update(unit, current, max)
 		end
 	end
 
-	self:Heal_Update(nil, unit)
+	layout:Heal_Update(nil, unit)
 end
 
 function layout:Power_Update(unit, current, max)
@@ -109,7 +114,7 @@ function layout:Power_Update(unit, current, max)
 end
 
 function layout:Name_Update(event, unit)
-	if self.unit ~= unit then return end
+	if(self.unit ~= unit) then return end
 
 	if(unit == "player") then
 		self.Name:Hide()
@@ -138,6 +143,6 @@ function layout:Name_Update(event, unit)
 			self.Name:SetTextColor(1, 1, 1)
 		end
 	else
-		self.Name:SetFormattedText(format.all.name, toHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
+		self.Name:SetFormattedText(format.all.name, ns:ToHex(unpack(colors.class[select(2, UnitClass(unit))] or "WARRIOR")), level, name)
 	end
 end

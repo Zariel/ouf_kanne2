@@ -45,19 +45,18 @@ local UnitAura = UnitAura
 local GetTime = GetTime
 local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
-local height, width = 35, 250
 local playerName = UnitName("player")
 local _, playerClass = UnitClass("player")
 
-local supernova = [[Interface\AddOns\oUF_Kanne2\media\nokiafc22.ttf]]
-local texture = [[Interface\AddOns\oUF_Kanne2\media\HalV.tga]]
-local apathy = [[Interface\AddOns\oUF_Kanne2\media\Normal.tga]]
-
-local dummy = function() end
+local width = ns.width
+local height = ns.height
 
 local powerBreak = ns.powerBreak
 local colors = ns.colors
 local format = ns.format
+
+local nokia22 = ns.nokia22
+local halV = ns.halV
 
 local menu = function(self)
 	local unit = self.unit:sub(1, -2)
@@ -95,7 +94,7 @@ local frame = function(self, unit, single)
 	hp:SetPoint("LEFT")
 	hp:SetPoint("RIGHT")
 	hp:SetPoint("TOP")
-	hp:SetStatusBarTexture(texture)
+	hp:SetStatusBarTexture(halV)
 
 	local hpbg = hp:CreateTexture(nil, "BORDER")
 	hpbg:SetAllPoints(hp)
@@ -106,7 +105,7 @@ local frame = function(self, unit, single)
 	hval:SetPoint("TOP")
 	hval:SetPoint("BOTTOM")
 	hval:SetPoint("RIGHT", hp, "RIGHT", -10, 0)
-	hval:SetFont(supernova, 10, "THINOUTLINE")
+	hval:SetFont(nokia22, 10, "THINOUTLINE")
 	hval:SetShadowColor(0,0,0,1)
 	hval:SetShadowOffset(1, -1)
 	hval:SetTextColor(1, 1, 1)
@@ -115,7 +114,7 @@ local frame = function(self, unit, single)
 	local per = hp:CreateFontString(nil, "OVERLAY")
 	per:SetPoint("RIGHT", self, "RIGHT", -15, 0)
 	per:SetPoint("CENTER")
-	per:SetFont(supernova, 10, "THINOUTLINE")
+	per:SetFont(nokia22, 10, "THINOUTLINE")
 	per:SetShadowColor(0,0,0,1)
 	per:SetShadowOffset(1, -1)
 	per:SetTextColor(1,1,1)
@@ -148,7 +147,7 @@ local frame = function(self, unit, single)
 	mp:SetPoint("TOP", hp, "BOTTOM")
 	mp:SetPoint("LEFT", hp, "LEFT")
 	mp:SetPoint("RIGHT", hp, "RIGHT")
-	mp:SetStatusBarTexture(texture)
+	mp:SetStatusBarTexture(halV)
 
 	local mpbg = mp:CreateTexture(nil, "BORDER")
 	mpbg:SetAllPoints(mp)
@@ -158,7 +157,7 @@ local frame = function(self, unit, single)
 	local pval = mp:CreateFontString(nil, "OVERLAY")
 	pval:SetPoint("TOP", self, "BOTTOM", 0, -5)
 	pval:SetPoint("LEFT", self, "LEFT")
-	pval:SetFont(supernova, 10, "THINOUTLINE")
+	pval:SetFont(nokia22, 10, "THINOUTLINE")
 	pval:SetShadowColor(0, 0, 0, 1)
 	pval:SetShadowOffset(1, -1)
 	pval:SetTextColor(1, 1, 1)
@@ -177,7 +176,7 @@ local frame = function(self, unit, single)
 	name:SetPoint("BOTTOM", 0, 5)
 	name:SetPoint("RIGHT", hval, "LEFT")
 	name:SetJustifyH("LEFT")
-	name:SetFont(supernova, 10, "THINOUTLINE")
+	name:SetFont(nokia22, 10, "THINOUTLINE")
 	name:SetShadowColor(0,0,0,1)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
@@ -252,7 +251,7 @@ local frame = function(self, unit, single)
 			holy:SetPoint("BOTTOM", self, "TOP")
 			holy:SetPoint("LEFT", self, "LEFT")
 			holy:SetPoint("RIGHT", self, "RIGHT")
-			holy:SetStatusBarTexture(texture)
+			holy:SetStatusBarTexture(halV)
 			local col = colors.mp[9]
 			holy:SetStatusBarColor(col.r, col.g, col.b)
 			holy:SetMinMaxValues(0, MAX_HOLY_POWER)
@@ -269,7 +268,7 @@ local frame = function(self, unit, single)
 		elseif(layout.Eclipse_Update) then
 			local eclipse = CreateFrame("StatusBar", nil, self)
 			eclipse:SetHeight(3)
-			eclipse:SetStatusBarTexture(texture)
+			eclipse:SetStatusBarTexture(halV)
 			eclipse:SetPoint("BOTTOM", self, "TOP")
 			eclipse:SetPoint("RIGHT", self, "RIGHT")
 			eclipse:SetPoint("LEFT", self, "LEFT")

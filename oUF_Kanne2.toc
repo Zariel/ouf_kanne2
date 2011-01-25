@@ -1,9 +1,17 @@
-## Interface: 30100
+## Interface: 40100
 ## Title: oUF_Kanne2
 ## Notes: OH HI
 ## Dependencies: oUF
-## OptDependencies: oUF_LibHeal
-## Version: 1
+## Version: 2
 ## X-Credits: Lyn (This is his layout)
+
+init.lua
+
+elements\name.lua
+
+updates\common.lua
+updates\aura.lua
+updates\druid.lua
+updates\paladin.lua
 
 core.lua

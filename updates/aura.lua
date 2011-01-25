@@ -2,6 +2,9 @@ local parent, ns = ...
 local layout = ns.layout
 if(not layout) then return end
 
+local apathy = ns.apathy
+local nokia22 = ns.nokia22
+
 local durationTimer = function(self, elapsed)
 	local expirationTime = select(7, UnitAura(self.unit, self:GetID(), "HARMFUL"))
 
@@ -67,6 +70,8 @@ local OnLeave = function()
 	return GameTooltip:Hide()
 end
 
+local dummy = function() end
+
 local condom = setmetatable({}, { __index = function()
 	return dummy
 end})
@@ -102,7 +107,7 @@ function layout:CreateAuraIcon(index)
 	skin.Hide = dummy
 
 	local count = button:CreateFontString(nil, "OVERLAY")
-	count:SetFont(supernova, 10, "THINOUTLINE")
+	count:SetFont(nokia22, 10, "THINOUTLINE")
 	count:SetShadowColor(0, 0, 0, 1)
 	count:SetShadowOffset(1, -1)
 	count:SetTextColor(1, 1, 0)
@@ -110,7 +115,7 @@ function layout:CreateAuraIcon(index)
 	count:SetJustifyH("RIGHT")
 
 	local duration = button:CreateFontString(nil, "OVERLAY")
-	duration:SetFont(supernova, 13, "OUTLINE")
+	duration:SetFont(nokia22, 13, "OUTLINE")
 	duration:SetShadowColor(0, 0, 0, 0.8)
 	duration:SetShadowOffset(1, -1)
 	duration:SetTextColor(1, 0, 0)
