@@ -195,6 +195,36 @@ local menu = function(self)
 	end
 end
 
+local Heal_Update = function(self, event, unit)
+	if(self.unit ~= unit) then return end
+
+	local hp = self.HealPrediction
+	local incHeal = UnitGetIncomingHeals(unit)
+
+	if(incHeal) then
+		local min, max = UnitHealth(unit), UnitHealthMax(unit)
+		local per = min / max
+		local incPer = incHeal / max
+		local width = self.Health:GetWidth()
+		local incSize = incPer * width
+		local size = per * width
+
+		if(incSize + size >= width) then
+			incSize = width - size
+		end
+
+		if(incSize > 0) then
+			hp:SetWidth(incSize)
+			hp:SetPoint("LEFT", self, "LEFT", size, 0)
+			hp:Show()
+		else
+			hp:Hide()
+		end
+	else
+		hp:Hide()
+	end
+end
+
 local Health_Update = function(self, unit, current, max)
 	self:SetValue(current)
 	local val = self.value
@@ -218,6 +248,8 @@ local Health_Update = function(self, unit, current, max)
 			end
 		end
 	end
+
+	Heal_Update(self, nil, unit)
 end
 
 local Power_Update = function(self, unit, current, max)
@@ -428,36 +460,6 @@ local Combo_Update = function(self, event, unit)
 	end
 
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
-end
-
-local Heal_Update = function(self, event, unit)
-	if(self.unit ~= unit) then return end
-
-	local hp = self.HealPrediction
-	local incHeal = UnitGetIncomingHeals(unit)
-
-	if(incHeal) then
-		local min, max = UnitHealth(unit), UnitHealthMax(unit)
-		local per = min / max
-		local incPer = incHeal / max
-		local width = self.Health:GetWidth()
-		local incSize = incPer * width
-		local size = per * width
-
-		if(incSize + size >= width) then
-			incSize = width - size
-		end
-
-		if(incSize > 0) then
-			hp:SetWidth(incSize)
-			hp:SetPoint("LEFT", self, "LEFT", size, 0)
-			hp:Show()
-		else
-			hp:Hide()
-		end
-	else
-		hp:Hide()
-	end
 end
 
 local Holy_Update = function(self, event, unit, powerType)
