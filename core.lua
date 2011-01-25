@@ -253,7 +253,7 @@ local frame = function(self, unit, single)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
 
-	self.OverideUpdateName = Name_Update
+	name.Override = Name_Update
 
 	self.Name = name
 	self.UNIT_LEVEL = Name_Update

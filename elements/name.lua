@@ -11,9 +11,13 @@ local update = function(self, event, unit)
 	end
 end
 
+local path = function(self, ...)
+	return (self.Name.Override or update)(self, ...)
+end
+
 local enable = function(self, unit)
 	if(self.Name) then
-		self:RegisterEvent("UNIT_NAME_UPDATE", update)
+		self:RegisterEvent("UNIT_NAME_UPDATE", path)
 
 		return true
 	end
@@ -25,4 +29,4 @@ local disable = function(self)
 	end
 end
 
-layout:AddElement("Name", update, enable, disable)
+layout:AddElement("Name", path, enable, disable)
