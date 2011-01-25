@@ -55,34 +55,6 @@ local apathy = [[Interface\AddOns\layout_Kanne2\media\Normal.tga]]
 
 local dummy = function() end
 
-do
-	local update = function(self, event, unit)
-		if(self.unit ~= unit) then return end
-		if(self.OverideUpdateName) then
-			self:OverideUpdateName(event, unit)
-		else
-			local name = UnitName(unit)
-			self.Name:SetText(name)
-		end
-	end
-
-	local enable = function(self, unit)
-		if(self.Name) then
-			self:RegisterEvent("UNIT_NAME_UPDATE", update)
-
-			return true
-		end
-	end
-
-	local disable = function(self)
-		if(self.Name) then
-			self:UnregisterEvent("UNIT_NAME_UPDATE")
-		end
-	end
-
-	layout:AddElement("Name", update, enable, disable)
-end
-
 local colors = {
 	mp = setmetatable({
 		[0] = { 48/255, 113/255,191/255 }, -- Mana
@@ -155,7 +127,6 @@ for k, v in pairs(format) do
 	end
 end
 
-
 local toHex = function(r, g, b)
 	return string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
 end
@@ -169,27 +140,6 @@ local menu = function(self)
 	elseif(_G[cunit.."FrameDropDown"]) then
 		ToggleDropDownMenu(1, nil, _G[cunit.."FrameDropDown"], "cursor", 0, 0)
 	end
-end
-
-local Combo_Update = function(self, event, unit)
-	if(unit ~= "player" and self.unit ~= "target") then return end
-
-	local c = GetComboPoints(unit, "target")
-
-	if(c == 0) then
-		c = self._level
-	end
-
-	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
-end
-
-local Eclipse_Update = function(self, unit)
-	local val = UnitPower("player", SPELL_POWER_ECLIPSE)
-	self:SetValue(math.abs(val))
-
-	local col = colors.mp.eclipse[val > 0 and "positive" or "negative"]
-	self:SetStatusBarColor(col.r, col.g, col.b)
-	self.bg:SetVertexColor(col.r, col.g, col.b)
 end
 
 local frame = function(self, unit, single)
