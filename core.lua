@@ -49,83 +49,15 @@ local height, width = 35, 250
 local playerName = UnitName("player")
 local _, playerClass = UnitClass("player")
 
-local supernova = [[Interface\AddOns\layout_Kanne2\media\nokiafc22.ttf]]
-local texture = [[Interface\AddOns\layout_Kanne2\media\HalV.tga]]
-local apathy = [[Interface\AddOns\layout_Kanne2\media\Normal.tga]]
+local supernova = [[Interface\AddOns\Kanne2\media\nokiafc22.ttf]]
+local texture = [[Interface\AddOns\Kanne2\media\HalV.tga]]
+local apathy = [[Interface\AddOns\Kanne2\media\Normal.tga]]
 
 local dummy = function() end
 
-local colors = {
-	mp = setmetatable({
-		[0] = { 48/255, 113/255,191/255 }, -- Mana
-		[1] = { 226/255, 45/255, 75/255 }, -- Rage
-		[2] = { 255/255, 178/255, 0 }, -- Focus
-		[3] = { 1, 1, 34/255 }, -- Energy
-		[4] = { 0, 1, 1 }, -- Happiness
-		[5] = { 0.5, 0.5, 0.5 },
-		[6] = { 0, 0.82, 1 }
-	}, { __index = PowerBarColor }),
-	class ={
-		["DEATHKNIGHT"] = { 0.77, 0.12, 0.23 },
-		["DRUID"] = { 1.0 , 0.49, 0.04 },
-		["HUNTER"] = { 0.67, 0.83, 0.45 },
-		["MAGE"] = { 0.41, 0.8 , 0.94 },
-		["PALADIN"] = { 0.96, 0.55, 0.73 },
-		["PRIEST"] = { 1.0 , 1.0 , 1.0 },
-		["ROGUE"] = { 1.0 , 0.96, 0.41 },
-		["SHAMAN"] = { 0,0.86,0.73 },
-		["WARLOCK"] = { 0.58, 0.51, 0.7 },
-		["WARRIOR"] = { 0.78, 0.61, 0.43 },
-	},
-	happy = {
-		[1] = { 1, 0, 0 }, -- need.... | unhappy
-		[2] = { 1, 1, 0 }, -- new..... | content
-		[3] = { 0, 1, 0 }, -- colors.. | happy
-	},
-}
-
-setmetatable(colors.class, {
-	__index = function(self, key)
-		return self.WARRIOR
-	end
-})
-
-local format = setmetatable({
-	["all"] = setmetatable({
-		["health"] = "%d.%d%%",
-		["health_full"] = "%d%%",
-		["health_per"] = "|cff%s%d|r.%d%%",
-		["health_perOnly"] = "|cff%s%d|r%%",
-		["power"] = "%d.|cffADADAD%d|r",
-		["power_full"] = "%d",
-		["name"] = "|cff%s%s|r %s",
-	},{
-		__index = function(self, key)
-			return "%s"
-		end,
-	}),
-	["player"] = {
-	},
-	["target"] = {},
-	["targettarget"] = {
-		["name"] = "%s",
-	},
-	["pet"] = {},
-}, {
-	__index = function(self, key)
-		return self.all
-	end,
-})
-
-for k, v in pairs(format) do
-	if k ~= "all" then
-		k = setmetatable(v, {
-			__index = function(self, key)
-				return format.all[key]
-			end,
-		})
-	end
-end
+local powerBreak = ns.powerBreak
+local colors = ns.colors
+local format = ns.format
 
 local toHex = function(r, g, b)
 	return string.format("%02x%02x%02x", r * 255, g * 255, b * 255)
@@ -238,7 +170,8 @@ local frame = function(self, unit, single)
 
 	mp.value = pval
 	mp.bg = mpbg
-	mp.PostUpdate = Power_Update
+	-- TODO: Override
+	mp.PostUpdate = self.Power_Update
 
 	self.Power = mp
 
@@ -253,11 +186,10 @@ local frame = function(self, unit, single)
 	name:SetShadowOffset(1, -1)
 	name:SetTextColor(1,1,1,1)
 
-	name.Override = Name_Update
+	name.Override = self.Name_Update
 
 	self.Name = name
-	self.UNIT_LEVEL = Name_Update
-	self:RegisterEvent("UNIT_LEVEL")
+	self:RegisterEvent("UNIT_LEVEL", self.Name_Update)
 
 	local ricon = hp:CreateTexture(nil, "OVERLAY")
 	ricon:SetPoint("LEFT", hp, "LEFT", 1, 0)
@@ -279,9 +211,8 @@ local frame = function(self, unit, single)
 
 	if unit == "target" or not unit then
 		if unit == "target" then
-			if(playerClass == "ROGUE") then
-				self.UNIT_COMBO_POINTS = Combo_Update
-				self:RegisterEvent("UNIT_COMBO_POINTS")
+			if(self.Combo_Update) then
+				self:RegisterEvent("UNIT_COMBO_POINTS", self.Combo_Update)
 			end
 
 			local b = CreateFrame("Frame", nil, self)
@@ -318,7 +249,7 @@ local frame = function(self, unit, single)
 	end
 
 	if(unit == "player") then
-		if(playerClass == "PALADIN") then
+		if(self.Holy_Update) then
 			local holy = CreateFrame("StatusBar", nil, self)
 			--holy:SetWidth(width)
 			holy:SetHeight(3)
@@ -336,10 +267,10 @@ local frame = function(self, unit, single)
 			hobg:SetVertexColor(col.r, col.g, col.b, 0.3)
 
 			holy.bg = hobg
-			holy.Override = Holy_Update
+			holy.Override = self.Holy_Update
 
 			self.HolyPower = holy
-		elseif(class == "DRUID") then
+		elseif(self.Eclipse_Update) then
 			local eclipse = CreateFrame("StatusBar", nil, self)
 			eclipse:SetHeight(3)
 			eclipse:SetStatusBarTexture(texture)
@@ -347,9 +278,9 @@ local frame = function(self, unit, single)
 			eclipse:SetPoint("RIGHT", self, "RIGHT")
 			eclipse:SetPoint("LEFT", self, "LEFT")
 
-			eclipse.PostUpdatePower = Eclipse_Update
-			eclipse.PostUpdateVisibility = Eclipse_Update
-			eclipse.PostDirectionChange = Eclipse_Update
+			eclipse.PostUpdatePower = self.Eclipse_Update
+			eclipse.PostUpdateVisibility = self.Eclipse_Update
+			eclipse.PostDirectionChange = self.Eclipse_Update
 
 			local ebg = eclipse:CreateTexture(nil, "BORDER")
 			ebg:SetAllPoints(eclipse)
