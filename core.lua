@@ -46,6 +46,7 @@ local SecondsToTimeAbbrev = SecondsToTimeAbbrev
 
 local height, width = 35, 250
 local playerName = UnitName("player")
+local _, playerClass = UnitClass("player")
 
 local supernova = [[Interface\AddOns\layout_Kanne2\media\nokiafc22.ttf]]
 local texture = [[Interface\AddOns\layout_Kanne2\media\HalV.tga]]
@@ -169,7 +170,6 @@ local menu = function(self)
 	end
 end
 
-
 local Combo_Update = function(self, event, unit)
 	if(unit ~= "player" and self.unit ~= "target") then return end
 
@@ -182,6 +182,22 @@ local Combo_Update = function(self, event, unit)
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
 end
 
+local Holy_Update = function(self, event, unit, powerType)
+	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
+
+	local hp = self.HolyPower
+	local min = UnitPower('player', SPELL_POWER_HOLY_POWER)
+	hp:SetValue(min)
+end
+
+local Eclipse_Update = function(self, unit)
+	local val = UnitPower("player", SPELL_POWER_ECLIPSE)
+	self:SetValue(math.abs(val))
+
+	local col = colors.mp.eclipse[val > 0 and "positive" or "negative"]
+	self:SetStatusBarColor(col.r, col.g, col.b)
+	self.bg:SetVertexColor(col.r, col.g, col.b)
+end
 
 local frame = function(self, unit, single)
 	self.menu = menu
@@ -310,7 +326,7 @@ local frame = function(self, unit, single)
 	if(single) then
 		if(powerBreak[unit]) then
 			self:SetSize(width * 0.45, height * 0.8)
-			hp:SetWidth(294 * 0.45)
+			hp:SetWidth(width * 0.45)
 			hp:SetHeight(27 * 0.8)
 			mp:SetHeight(7 * 0.8)
 		else
@@ -320,8 +336,10 @@ local frame = function(self, unit, single)
 
 	if unit == "target" or not unit then
 		if unit == "target" then
-			self.UNIT_COMBO_POINTS = Combo_Update
-			self:RegisterEvent("UNIT_COMBO_POINTS")
+			if(playerClass == "ROGUE") then
+				self.UNIT_COMBO_POINTS = Combo_Update
+				self:RegisterEvent("UNIT_COMBO_POINTS")
+			end
 
 			local b = CreateFrame("Frame", nil, self)
 			b:SetHeight(50)
@@ -354,6 +372,50 @@ local frame = function(self, unit, single)
 		d.CreateIcon = CreateAuraIcon
 		d.PostUpdateIcon = PostUpdateAuraIcon
 		--self.PreAuraSetPosition = PreAuraSetPosition
+	end
+
+	if(unit == "player") then
+		if(playerClass == "PALADIN") then
+			local holy = CreateFrame("StatusBar", nil, self)
+			--holy:SetWidth(width)
+			holy:SetHeight(3)
+			holy:SetPoint("BOTTOM", self, "TOP")
+			holy:SetPoint("LEFT", self, "LEFT")
+			holy:SetPoint("RIGHT", self, "RIGHT")
+			holy:SetStatusBarTexture(texture)
+			local col = colors.mp[9]
+			holy:SetStatusBarColor(col.r, col.g, col.b)
+			holy:SetMinMaxValues(0, MAX_HOLY_POWER)
+
+			local hobg = holy:CreateTexture(nil, "BORDER")
+			hobg:SetAllPoints(holy)
+			hobg:SetTexture(texture)
+			hobg:SetVertexColor(col.r, col.g, col.b, 0.3)
+
+			holy.bg = hobg
+			holy.Override = Holy_Update
+
+			self.HolyPower = holy
+		elseif(class == "DRUID") then
+			local eclipse = CreateFrame("StatusBar", nil, self)
+			eclipse:SetHeight(3)
+			eclipse:SetStatusBarTexture(texture)
+			eclipse:SetPoint("BOTTOM", self, "TOP")
+			eclipse:SetPoint("RIGHT", self, "RIGHT")
+			eclipse:SetPoint("LEFT", self, "LEFT")
+
+			eclipse.PostUpdatePower = Eclipse_Update
+			eclipse.PostUpdateVisibility = Eclipse_Update
+			eclipse.PostDirectionChange = Eclipse_Update
+
+			local ebg = eclipse:CreateTexture(nil, "BORDER")
+			ebg:SetAllPoints(eclipse)
+			ebg:SetTexture(texture)
+			ebg:SetAlpha(0.3)
+
+			eclipse.bg = ebg
+			self.EclipseBar = eclipse
+		end
 	end
 
 	--[[
@@ -389,13 +451,6 @@ local frame = function(self, unit, single)
 		end
 	end
 	]]
-	if(powerBreak[unit]) then
-		--pval:Hide()
-		--hval:Hide()
-		hp:SetWidth(294 * 0.45)
-		hp:SetHeight(27 * 0.8)
-		mp:SetHeight(7 * 0.8)
-	end
 
 	if(not unit) then
 		self.Range = true
