@@ -98,7 +98,7 @@ local frame = function(self, unit, single)
 
 	local hpbg = hp:CreateTexture(nil, "BORDER")
 	hpbg:SetAllPoints(hp)
-	hpbg:SetTexture(texture)
+	hpbg:SetTexture(halV)
 	hpbg:SetAlpha(0.3)
 
 	local hval = hp:CreateFontString(nil, "OVERLAY")
@@ -133,7 +133,7 @@ local frame = function(self, unit, single)
 	pred:SetPoint("BOTTOM", hp)
 	pred:SetHeight(30)
 	pred:SetWidth(0)
-	pred:SetTexture(texture)
+	pred:SetTexture(halV)
 	pred:SetVertexColor(0, 1, 0, 0.8)
 	pred:Hide()
 
@@ -151,7 +151,7 @@ local frame = function(self, unit, single)
 
 	local mpbg = mp:CreateTexture(nil, "BORDER")
 	mpbg:SetAllPoints(mp)
-	mpbg:SetTexture(texture)
+	mpbg:SetTexture(halV)
 	mpbg:SetAlpha(0.3)
 
 	local pval = mp:CreateFontString(nil, "OVERLAY")
