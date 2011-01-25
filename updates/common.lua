@@ -72,6 +72,8 @@ function layout:Health_Update(unit, current, max)
 			end
 		end
 	end
+
+	self:Heal_Update(nil, unit)
 end
 
 function layout:Power_Update(unit, current, max)
