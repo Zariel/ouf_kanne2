@@ -25,6 +25,7 @@ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ]]
 
+local parent, ns = ...
 local layout = ns.layout
 
 -- Lets kill some things eh?
@@ -180,14 +181,6 @@ local Combo_Update = function(self, event, unit)
 	end
 
 	self.Name:SetFormattedText(format.all.name, toHex(unpack(self._color)), c, self._name)
-end
-
-local Holy_Update = function(self, event, unit, powerType)
-	if(self.unit ~= unit or (powerType and powerType ~= 'HOLY_POWER')) then return end
-
-	local hp = self.HolyPower
-	local min = UnitPower('player', SPELL_POWER_HOLY_POWER)
-	hp:SetValue(min)
 end
 
 local Eclipse_Update = function(self, unit)
