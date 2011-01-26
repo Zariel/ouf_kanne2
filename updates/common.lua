@@ -32,6 +32,7 @@ function layout:Heal_Update(event, unit)
 	local incHeal = UnitGetIncomingHeals(unit)
 
 	if(incHeal) then
+		local width = self.Health:GetWidth()
 		local min, max = UnitHealth(unit), UnitHealthMax(unit)
 		local per = min / max
 		local incPer = incHeal / max
@@ -76,6 +77,12 @@ function layout:Health_Update(unit, current, max)
 				val:SetFormattedText(form.health_per, col, current, per)
 			end
 		end
+	end
+
+	local hp = self:GetParent().HealPrediction
+	if(hp:IsShown()) then
+		local size = (current / max) * self:GetWidth()
+		hp:SetPoint("LEFT", self, "LEFT", size, 0)
 	end
 
 	layout:Heal_Update(nil, unit)
