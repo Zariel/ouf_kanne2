@@ -59,13 +59,14 @@ function layout:Health_Update(unit, current, max)
 	self:SetValue(current)
 	local val = self.value
 
-	local form = format[unit]
 	local per = floor(current * 100 / max)
 
 	if(per == 100 or per == 0) then
-		val:Hide()
+		return val:Hide()
 	else
+		local form = format[unit]
 		val:Show()
+
 		if(powerBreak[unit]) then
 			val:SetFormattedText(form.health_full, per)
 		else
@@ -81,11 +82,9 @@ function layout:Health_Update(unit, current, max)
 
 	local hp = self:GetParent().HealPrediction
 	if(hp:IsShown()) then
-		local size = (current / max) * self:GetWidth()
+		local size = per * self:GetWidth()
 		hp:SetPoint("LEFT", self, "LEFT", size, 0)
 	end
-
-	layout:Heal_Update(nil, unit)
 end
 
 function layout:Power_Update(unit, current, max)
@@ -109,11 +108,7 @@ function layout:Power_Update(unit, current, max)
 	self:GetParent().Power:SetStatusBarColor(unpack(col))
 	self:GetParent().Power.bg:SetVertexColor(unpack(col))
 
-	if(powerBreak[unit]) then
-		return val:Hide()
-	end
-
-	if(current == max or current == 0) then
+	if(powerBreak[unit] or current == max or current == 0) then
 		val:Hide()
 	else
 		val:Show()
