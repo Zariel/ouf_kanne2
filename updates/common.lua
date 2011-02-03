@@ -63,28 +63,31 @@ function layout:Health_Update(unit, current, max)
 
 	if(per == 100 or per == 0) then
 		return val:Hide()
-	else
-		local form = format[unit]
-		val:Show()
+	end
 
-		if(powerBreak[unit]) then
-			val:SetFormattedText(form.health_full, per)
+	local form = format[unit]
+	val:Show()
+
+	if(powerBreak[unit]) then
+		val:SetFormattedText(form.health_full, per)
+	else
+		local col = ns:ToHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
+		-- current will never == per or max ??
+		if(current == max) then
+			val:SetFormattedText(form.health_perOnly, col, per)
 		else
-			local col = ns:ToHex(unpack(ColorGradient(per/100, 1, 0, 0, 1, 1, 0, 0, 1, 0)))
-			-- current will never == per ??
-			if(current == per) then
-				val:SetFormattedText(form.health_perOnly, col, per)
-			else
-				val:SetFormattedText(form.health_per, col, current, per)
-			end
+			val:SetFormattedText(form.health_per, col, current, per)
 		end
 	end
 
+	--[[
 	local hp = self:GetParent().HealPrediction
 	if(hp:IsShown()) then
-		local size = per * self:GetWidth()
-		hp:SetPoint("LEFT", self, "LEFT", size, 0)
+		local size = per * self:GetParent():GetWidth()
+		hp:ClearAllPoints()
+		hp:SetPoint("LEFT", self:GetParent(), "LEFT", size, 0)
 	end
+	]]
 end
 
 function layout:Power_Update(unit, current, max)

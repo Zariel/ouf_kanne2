@@ -128,11 +128,10 @@ local frame = function(self, unit, single)
 
 	self.Health = hp
 
-	local pred = hp:CreateTexture(nil, "OVERLAY")
-	pred:SetPoint("TOP", hp)
-	pred:SetPoint("BOTTOM", hp)
+	local pred = self:CreateTexture(nil, "OVERLAY")
 	pred:SetHeight(30)
 	pred:SetWidth(0)
+	pred:SetPoint("TOP")
 	pred:SetTexture(halV)
 	pred:SetVertexColor(0, 1, 0, 0.8)
 	pred:Hide()
@@ -199,6 +198,7 @@ local frame = function(self, unit, single)
 			hp:SetWidth(width * 0.45)
 			hp:SetHeight(27 * 0.8)
 			mp:SetHeight(7 * 0.8)
+			pred:SetHeight(27 * 0.8)
 		else
 			self:SetSize(width, height)
 		end
