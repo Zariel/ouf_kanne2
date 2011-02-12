@@ -13,5 +13,6 @@ updates\common.lua
 updates\aura.lua
 updates\druid.lua
 updates\paladin.lua
+updates\rogue.lua
 
 core.lua
