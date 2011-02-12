@@ -198,13 +198,14 @@ local frame = function(self, unit, single)
 			hp:SetWidth(width * 0.45)
 			hp:SetHeight(27 * 0.8)
 			mp:SetHeight(7 * 0.8)
+			mp:SetWidth(7 * 0.8)
 			pred:SetHeight(27 * 0.8)
 		else
 			self:SetSize(width, height)
 		end
 	end
 
-	if unit == "target" or not unit then
+	if(unit == "target" or not unit) then
 		if unit == "target" then
 			if(layout.Combo_Update) then
 				self:RegisterEvent("UNIT_COMBO_POINTS", layout.Combo_Update)
@@ -244,6 +245,24 @@ local frame = function(self, unit, single)
 	end
 
 	if(unit == "player") then
+		local am = CreateFrame("StatusBar", nil, self)
+		am:SetHeight(3)
+		am:SetStatusBarTexture(halV)
+		am:SetPoint("TOP", self, "BOTTOM", 0, -1)
+		am:SetPoint("LEFT", self, "LEFT")
+		am:SetPoint("RIGHT", self, "RIGHT")
+		local col = colors.mp[0]
+		am:SetStatusBarColor(col.r, col.g, col.b)
+
+		local ambg = am:CreateTexture(nil, "BORDER")
+		ambg:SetAllPoints(am)
+		ambg:SetTexture(halV)
+		ambg:SetVertexColor(col.r, col.g, col.b, 0.3)
+
+		am.bg = ambg
+
+		self.AltPowerBar = am
+
 		if(layout.Holy_Update) then
 			local holy = CreateFrame("StatusBar", nil, self)
 			--holy:SetWidth(width)
@@ -258,7 +277,7 @@ local frame = function(self, unit, single)
 
 			local hobg = holy:CreateTexture(nil, "BORDER")
 			hobg:SetAllPoints(holy)
-			hobg:SetTexture(texture)
+			hobg:SetTexture(halV)
 			hobg:SetVertexColor(col.r, col.g, col.b, 0.3)
 
 			holy.bg = hobg
@@ -350,9 +369,7 @@ layout:Factory(function(self)
 	layout:RegisterStyle("Kanne2", frame)
 	layout:SetActiveStyle("Kanne2")
 
-	for i = 1, 5 do
-		layout:DisableBlizzard("boss" .. i)
-	end
+	layout:DisableBlizzard("boss")
 
 	local player = layout:Spawn("player")
 	player:SetPoint("RIGHT", UIParent, "CENTER", - 50, - 175)
