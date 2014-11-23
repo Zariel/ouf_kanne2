@@ -96,17 +96,7 @@ function layout:Power_Update(unit, current, max)
 
 	val:SetText(current)
 
-	local col
-	if(unit == "pet") then
-		local happiness = GetPetHappiness()
-		if(happiness) then
-			col = colors.happy[happiness]
-		else
-			col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-		end
-	else
-		col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
-	end
+	local col = colors.mp[UnitPowerType(unit)] or { 1, 1, 1 }
 
 	self:GetParent().Power:SetStatusBarColor(unpack(col))
 	self:GetParent().Power.bg:SetVertexColor(unpack(col))
