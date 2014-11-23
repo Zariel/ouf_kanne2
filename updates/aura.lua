@@ -1,6 +1,6 @@
 local parent, ns = ...
 local layout = ns.layout
-if(not layout) then return end
+if(not layout) then return print("missing layout") end
 
 local apathy = ns.apathy
 local nokia22 = ns.nokia22
@@ -16,7 +16,7 @@ local durationTimer = function(self, elapsed)
 	end
 end
 
-function layout:PostUpdateAuraIcon(unit, icon, index, offset)
+function layout:PostUpdateIcon(unit, icon, index, offset)
 	icon.unit = unit
 
 	local name, rank, btexture, count, dtype, duration, timeLeft, caster = UnitAura(unit, index, icon.filter)
@@ -45,7 +45,7 @@ function layout:PostUpdateAuraIcon(unit, icon, index, offset)
 	end
 end
 
-function layout:PreAuraSetPosition(self, icons, max)
+function layout:PreSetPosition(self, icons, max)
 	table.sort(icons, function(self, a, b)
 		if a and b then
 			if a.caster == "player" then
@@ -76,7 +76,7 @@ local condom = setmetatable({}, { __index = function()
 	return dummy
 end})
 
-function layout:CreateAuraIcon(index)
+function layout:CreateIcon(index)
 	local icons = self -- TODO: FIX THIS
 	local size = icons.size or 16
 
@@ -122,6 +122,12 @@ function layout:CreateAuraIcon(index)
 	duration:SetPoint("TOPLEFT", 1, -1)
 	duration:SetJustifyH("LEFT")
 
+	local stealable = button:CreateTexture(nil, 'OVERLAY')
+	stealable:SetTexture[[Interface\TargetingFrame\UI-TargetingFrame-Stealable]]
+	stealable:SetPoint("TOPLEFT", -3, 3)
+	stealable:SetPoint("BOTTOMRIGHT", 3, -3)
+	stealable:SetBlendMode("ADD")
+
 	button:SetScript("OnEnter", OnEnter)
 	button:SetScript("OnLeave", OnLeave)
 
@@ -131,6 +137,7 @@ function layout:CreateAuraIcon(index)
 	button.overlay = skin
 	button.count = count
 	button.duration = duration
+	button.stealable = stealable
 
 	button.cd = condom
 	button.cd.noCooldownCount = true
