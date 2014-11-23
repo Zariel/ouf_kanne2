@@ -273,7 +273,7 @@ local frame = function(self, unit, single)
 			holy:SetStatusBarTexture(halV)
 			local col = colors.mp[9]
 			holy:SetStatusBarColor(col.r, col.g, col.b)
-			holy:SetMinMaxValues(0, MAX_HOLY_POWER)
+			holy:SetMinMaxValues(0, UnitPowerMax("unit", SPELL_POWER_HOLY_POWER))
 
 			local hobg = holy:CreateTexture(nil, "BORDER")
 			hobg:SetAllPoints(holy)
