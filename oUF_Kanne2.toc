@@ -1,4 +1,4 @@
-## Interface: 40100
+## Interface: 60000
 ## Title: oUF_Kanne2
 ## Notes: OH HI
 ## Dependencies: oUF
